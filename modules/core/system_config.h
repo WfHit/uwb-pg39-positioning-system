@@ -24,8 +24,7 @@
 
 // Device Modes
 #define DEVICE_MODE_TAG            0
-#define DEVICE_MODE_SUB_ANCHOR     1
-#define DEVICE_MODE_MAIN_ANCHOR    2
+#define DEVICE_MODE_ANCHOR         1
 
 // Ranging Algorithms
 #define RANGING_DS_TWR             0

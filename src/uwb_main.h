@@ -16,7 +16,6 @@ void uwb_system_shutdown(void);
 // Device mode configuration
 bool configure_as_tag(uint8_t tag_id);
 bool configure_as_anchor(uint8_t anchor_id, uint8_t zone_id, const position_t* position);
-bool configure_as_main_anchor(uint8_t anchor_id, uint8_t zone_id, const position_t* position);
 
 // System status and statistics
 void get_system_status(system_stats_t* stats);

@@ -70,13 +70,9 @@ bool uwb_system_init(uint8_t device_mode, uint8_t device_id)
         case DEVICE_MODE_TAG:
             config_success = configure_as_tag(device_id);
             break;
-        case DEVICE_MODE_SUB_ANCHOR:
+        case DEVICE_MODE_ANCHOR:
             config_success = configure_as_anchor(device_id, system_config.zone_id, 
                                                &system_config.anchor_position);
-            break;
-        case DEVICE_MODE_MAIN_ANCHOR:
-            config_success = configure_as_main_anchor(device_id, system_config.zone_id, 
-                                                    &system_config.anchor_position);
             break;
         default:
             last_error = ERROR_INVALID_DATA;
@@ -110,8 +106,7 @@ void uwb_system_process(void)
         case DEVICE_MODE_TAG:
             tag_coordinator_process();
             break;
-        case DEVICE_MODE_SUB_ANCHOR:
-        case DEVICE_MODE_MAIN_ANCHOR:
+        case DEVICE_MODE_ANCHOR:
             anchor_manager_process();
             break;
     }
@@ -137,21 +132,10 @@ bool configure_as_anchor(uint8_t anchor_id, uint8_t zone_id, const position_t* p
 {
     if(!position) return false;
     
-    current_device_mode = DEVICE_MODE_SUB_ANCHOR;
+    current_device_mode = DEVICE_MODE_ANCHOR;
     current_device_id = anchor_id;
     
     // Initialize anchor manager
-    return anchor_manager_init(anchor_id, zone_id, position);
-}
-
-bool configure_as_main_anchor(uint8_t anchor_id, uint8_t zone_id, const position_t* position)
-{
-    if(!position) return false;
-    
-    current_device_mode = DEVICE_MODE_MAIN_ANCHOR;
-    current_device_id = anchor_id;
-    
-    // Initialize anchor manager (same as sub-anchor for now)
     return anchor_manager_init(anchor_id, zone_id, position);
 }
 
@@ -169,8 +153,7 @@ void get_system_status(system_stats_t* stats)
                 get_coordinator_stats(stats);
             }
             break;
-        case DEVICE_MODE_SUB_ANCHOR:
-        case DEVICE_MODE_MAIN_ANCHOR:
+        case DEVICE_MODE_ANCHOR:
             if(anchor_manager_is_active())
             {
                 get_anchor_stats(stats);
@@ -206,8 +189,7 @@ bool is_system_ready(void)
         case DEVICE_MODE_TAG:
             mode_ready = tag_coordinator_is_active();
             break;
-        case DEVICE_MODE_SUB_ANCHOR:
-        case DEVICE_MODE_MAIN_ANCHOR:
+        case DEVICE_MODE_ANCHOR:
             mode_ready = anchor_manager_is_active();
             break;
     }
@@ -323,8 +305,7 @@ void uwb_system_shutdown(void)
             case DEVICE_MODE_TAG:
                 tag_coordinator_reset();
                 break;
-            case DEVICE_MODE_SUB_ANCHOR:
-            case DEVICE_MODE_MAIN_ANCHOR:
+            case DEVICE_MODE_ANCHOR:
                 anchor_manager_reset();
                 break;
         }
