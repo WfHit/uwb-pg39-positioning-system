@@ -1,8 +1,10 @@
 #include "twr.h"
 #include "filter.h"
 
-/* Hold copy of status register state here for reference, so reader can examine it at a breakpoint. 
-�����ﱣ��״̬�Ĵ���״̬�ĸ����Թ��ο����Ա���߿����ڶϵ��ϼ������*/
+/* Global variables for positioning calculations */
+uint32_t Calculate_FLAG = 0;  ///< Bitfield indicating which anchors have valid calculations
+
+/* Hold copy of status register state here for reference, so reader can examine it at a breakpoint. */
 uint32_t status_reg = 0;
 uint32_t frame_len = 0;        		//DWM1000�շ����ݰ����Ȼ���	
 

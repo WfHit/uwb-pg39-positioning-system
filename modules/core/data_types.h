@@ -3,7 +3,37 @@
 
 #include "system_config.h"
 
-// Position Structure
+/*============================================================================
+ * LEGACY TYPE DEFINITIONS (for backward compatibility)
+ *============================================================================*/
+
+/** @brief Legacy type alias for uint8_t */
+typedef uint8_t u8;
+
+/** @brief Maximum number of anchors in the system */
+#define ANCHOR_LIST_COUNT           MAX_TOTAL_ANCHORS
+
+/** @brief Maximum number of tags that can be tracked */  
+#define TAG_USE_MAX_NUM             20
+
+/** @brief Global flag indicating which anchors have valid distance calculations */
+extern uint32_t Calculate_FLAG;
+
+/*============================================================================
+ * POSITIONING TYPES
+ *============================================================================*/
+
+/** @brief Legacy anchor structure for positioning algorithms */
+typedef struct {
+    float x;        ///< X coordinate in meters
+    float y;        ///< Y coordinate in meters  
+    float z;        ///< Z coordinate in meters
+    float dist;     ///< Distance measurement in meters
+} Anchor_t;
+
+/*============================================================================
+ * STANDARD TYPES
+ *============================================================================*/
 typedef struct {
     int16_t x_cm;
     int16_t y_cm;

@@ -1,76 +1,128 @@
+/**
+ * @file    loc.c
+ * @brief   UWB positioning algorithms and mathematical calculations
+ * 
+ * This file contains the core positioning algorithms including:
+ * - 2D/3D trilateration using least squares
+ * - Taylor series expansion for position refinement  
+ * - Circle intersection validation
+ * - Distance calculations and filtering
+ * - Center of mass calculations
+ * 
+ * @author  UWB PG3.9 project
+ * @date    2024
+ */
+
 #include <math.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include "loc.h"
-#include "../libraries/math_lib/include/arm_math.h"
+#include "../../libraries/math_lib/include/arm_math.h"
 #include "array.h"
 
-#define MASS_THRESH 15.0f
-#define TAYLOR_2D_THRESH 5.0f
-#define TAYLOR_3D_THRESH 5.0f
+/*============================================================================
+ * CONSTANTS AND DEFINITIONS
+ *============================================================================*/
 
-uint8_t Cal_2D_AllCenterMass(float* Anc_A,float* Anc_B,float* Anc_C, float* Cal_result);
+/** @brief Threshold for center mass selection algorithm (meters) */
+#define CENTER_MASS_THRESHOLD_M         15.0f
 
-/// <summary>
-float Triangle_scale=1.1;    //��վɸѡ����ʹ�õı�������
+/** @brief Convergence threshold for 2D Taylor series algorithm (meters) */
+#define TAYLOR_2D_CONVERGENCE_THRESH_M  5.0f
 
-/*! ------------------------------------------------------------------------------------------------------------------
- * @brief �ж�����Բ�Ƿ��ཻ
- *
- * input parameters
- * @param r1 Բ1�뾶
- * @param r2 Բ2�뾶 
- * @param d  ��ԲԲ�ľ�
- * output parameters
- * 1������Բ�ཻ 0���ཻ
+/** @brief Convergence threshold for 3D Taylor series algorithm (meters) */
+#define TAYLOR_3D_CONVERGENCE_THRESH_M  5.0f
+
+/** @brief Triangle scaling factor for anchor validation */
+#define TRIANGLE_SCALE_FACTOR           1.1f
+
+/** @brief Minimum height difference for 3D positioning (mm) */
+#define MIN_HEIGHT_DIFFERENCE_MM        100.0f
+
+/** @brief Circle radius expansion factor for intersection validation */
+#define CIRCLE_EXPANSION_FACTOR         1.05f
+
+/** @brief Maximum coordinate value for validation (meters) */
+#define MAX_COORDINATE_VALUE_M          1000.0f
+
+/** @brief Maximum iterations for Taylor series convergence */
+#define MAX_TAYLOR_ITERATIONS           5
+
+/*============================================================================
+ * PRIVATE FUNCTION DECLARATIONS
+ *============================================================================*/
+
+static uint8_t calculate_2d_center_mass(float* anchor_a, float* anchor_b, float* anchor_c, float* result);
+
+/*============================================================================
+ * GLOBAL VARIABLES
+ *============================================================================*/
+
+/** @brief Triangle scaling factor for anchor filtering and validation */
+static float triangle_scale_factor = TRIANGLE_SCALE_FACTOR;
+
+/*============================================================================
+ * GEOMETRY AND VALIDATION FUNCTIONS
+ *============================================================================*/
+
+/**
+ * @brief Check if two circles intersect
+ * 
+ * @param radius1 Radius of first circle (meters)
+ * @param radius2 Radius of second circle (meters)
+ * @param distance Distance between circle centers (meters)
+ * @return true if circles intersect, false otherwise
  */
-uint8_t Judge_CircleIntersection(double r1, double r2, double d)
+static bool check_circle_intersection(double radius1, double radius2, double distance)
 {
-	 if(r1 + r2 < d) //�������� ��΢�����ܷ�����
-	 {
-		r1 *= 1.05;
-		r2 *= 1.05;
-		if (r1 + r2 < d)
-			return 0;
+	 // Check if circles are too far apart to intersect
+	 if(radius1 + radius2 < distance) {
+		radius1 *= CIRCLE_EXPANSION_FACTOR;
+		radius2 *= CIRCLE_EXPANSION_FACTOR;
+		if (radius1 + radius2 < distance)
+			return false;
 	 }
-	 if(fabs(r1 - r2) > d) //���ж��Ƿ��ں�
-	 {
-		 if(r1 > r2)
-			r2*=1.05;
+	 
+	 // Check if one circle is completely inside the other
+	 if(fabs(radius1 - radius2) > distance) {
+		 if(radius1 > radius2)
+			radius2 *= CIRCLE_EXPANSION_FACTOR;
 		 else
-			r1*=1.05;
-		 if(fabs(r1 - r2) > d)
-			return 0;
+			radius1 *= CIRCLE_EXPANSION_FACTOR;
+		 if(fabs(radius1 - radius2) > distance)
+			return false;
 	 }
-	 return 1;
+	 return true;
 }
 
 
-/*! ------------------------------------------------------------------------------------------------------------------
- * @brief ��������Ķ�άƽ���ŷʽ����
- *
- * input parameters
- * @param x1 y1 ��1�Ķ�ά����
- * @param x2 y2 ��2�Ķ�ά����
- * output parameters
- * ����ŷʽ����
+/**
+ * @brief Calculate 2D Euclidean distance between two points
+ * 
+ * @param x1 X coordinate of first point
+ * @param y1 Y coordinate of first point
+ * @param x2 X coordinate of second point
+ * @param y2 Y coordinate of second point
+ * @return Euclidean distance between the points
  */
-double Cal_Dist(double x1, double y1, double x2, double y2)
+static double calculate_2d_distance(double x1, double y1, double x2, double y2)
 {
 	return sqrt(pow((x1-x2),2)+pow((y1-y2),2));
 }
 
 
-/*! ------------------------------------------------------------------------------------------------------------------
- * @brief �����������άƽ���ŷʽ����
- *
- * input parameters
- * @param x1 y1 z1 ��1����ά����
- * @param x2 y2 z2 ��2����ά����
- * output parameters
- * ����ŷʽ����
+/**
+ * @brief Calculate 3D Euclidean distance between two points
+ * 
+ * @param x1 X coordinate of first point
+ * @param y1 Y coordinate of first point
+ * @param z1 Z coordinate of first point
+ * @param x2 X coordinate of second point
+ * @param y2 Y coordinate of second point
+ * @param z2 Z coordinate of second point
+ * @return Euclidean distance between the points
  */
-double Cal_Dist_3D(double x1, double y1, double z1, double x2, double y2, double z2)
+static double calculate_3d_distance(double x1, double y1, double z1, double x2, double y2, double z2)
 {
 	return sqrt(pow((x1-x2),2)+pow((y1-y2),2)+pow((z1-z2),2));
 }
@@ -143,12 +195,12 @@ void Quick_Sort_withdata(uint16_t (*sort_data)[2], uint16_t left_idx, uint16_t r
 uint8_t Judge_2D (float *anc1,float *anc2, float *anc3)//
 {
 	float Dist_12,Dist_13,Dist_23;	
-	Dist_12=Cal_Dist(anc1[0],anc1[1],anc2[0],anc2[1]);//1��2��վ����	
-	Dist_13=Cal_Dist(anc1[0],anc1[1],anc3[0],anc3[1]);//1��3��վ����
-	Dist_23=Cal_Dist(anc2[0],anc2[1],anc3[0],anc3[1]);//2��3��վ����
+	Dist_12=calculate_2d_distance(anc1[0],anc1[1],anc2[0],anc2[1]);//Distance between anchor 1 and 2	
+	Dist_13=calculate_2d_distance(anc1[0],anc1[1],anc3[0],anc3[1]);//Distance between anchor 1 and 3
+	Dist_23=calculate_2d_distance(anc2[0],anc2[1],anc3[0],anc3[1]);//Distance between anchor 2 and 3
 	 
-	 //��Բ�ཻ���
-	if((Dist_12+Dist_13)>(Dist_23*Triangle_scale) && (Dist_12+Dist_23)>(Dist_13*Triangle_scale)  &&  (Dist_13+Dist_23)>(Dist_12*Triangle_scale))
+	 //Circle intersection test
+	if((Dist_12+Dist_13)>(Dist_23*triangle_scale_factor) && (Dist_12+Dist_23)>(Dist_13*triangle_scale_factor)  &&  (Dist_13+Dist_23)>(Dist_12*triangle_scale_factor))
 	{
 		//�ҵ����߳�
 		float max_dist = Dist_12;
@@ -160,7 +212,7 @@ uint8_t Judge_2D (float *anc1,float *anc2, float *anc3)//
 		//max_dist *= 1.2;
 		if (max_dist < anc1[2] && max_dist < anc2[2] && max_dist < anc3[2])
 			return 0;
-		if(Judge_CircleIntersection(anc1[2],anc2[2],Dist_12) && Judge_CircleIntersection(anc1[2],anc3[2],Dist_13) && Judge_CircleIntersection(anc2[2],anc3[2],Dist_23))
+		if(check_circle_intersection(anc1[2],anc2[2],Dist_12) && check_circle_intersection(anc1[2],anc3[2],Dist_13) && check_circle_intersection(anc2[2],anc3[2],Dist_23))
 			return 1;
 		else
 			return 0;
@@ -200,24 +252,24 @@ uint8_t Judge_3D (float x1, float y1,float z1, float r1,
 	dist_all_2D[4] = Cal_Dist(x2,y2,x4,y4);//2��4��վ����
 	dist_all_2D[5] = Cal_Dist(x3,y3,x4,y4);//3��4��վ����
 
-	if(!(dist_all_2D[0]+dist_all_2D[1] > dist_all_2D[3]*Triangle_scale)    //1 2 3��վ�ж�
-			&& !(dist_all_2D[0]+dist_all_2D[3] > dist_all_2D[1]*Triangle_scale) 
-			&& !(dist_all_2D[1]+dist_all_2D[3] > dist_all_2D[0]*Triangle_scale))
+	if(!(dist_all_2D[0]+dist_all_2D[1] > dist_all_2D[3]*triangle_scale_factor)    //Anchor 1,2,3 check
+			&& !(dist_all_2D[0]+dist_all_2D[3] > dist_all_2D[1]*triangle_scale_factor) 
+			&& !(dist_all_2D[1]+dist_all_2D[3] > dist_all_2D[0]*triangle_scale_factor))
 		return 0;
 
-	if(!(dist_all_2D[0]+dist_all_2D[2] > dist_all_2D[4]*Triangle_scale)   //1 2 4��վ�ж�
-			&& !(dist_all_2D[0]+dist_all_2D[4] > dist_all_2D[2]*Triangle_scale) 
-			&& !(dist_all_2D[2]+dist_all_2D[4] > dist_all_2D[0]*Triangle_scale))
+	if(!(dist_all_2D[0]+dist_all_2D[2] > dist_all_2D[4]*triangle_scale_factor)   //Anchor 1,2,4 check
+			&& !(dist_all_2D[0]+dist_all_2D[4] > dist_all_2D[2]*triangle_scale_factor) 
+			&& !(dist_all_2D[2]+dist_all_2D[4] > dist_all_2D[0]*triangle_scale_factor))
 		return 0;	
 	
-	if(!(dist_all_2D[1]+dist_all_2D[2] > dist_all_2D[5]*Triangle_scale)   //1 3 4��վ�ж�
-			&& !(dist_all_2D[1]+dist_all_2D[5] > dist_all_2D[2]*Triangle_scale) 
-			&& !(dist_all_2D[2]+dist_all_2D[5] > dist_all_2D[1]*Triangle_scale))
+	if(!(dist_all_2D[1]+dist_all_2D[2] > dist_all_2D[5]*triangle_scale_factor)   //Anchor 1,3,4 check
+			&& !(dist_all_2D[1]+dist_all_2D[5] > dist_all_2D[2]*triangle_scale_factor) 
+			&& !(dist_all_2D[2]+dist_all_2D[5] > dist_all_2D[1]*triangle_scale_factor))
 		return 0;	
 	
-	if(!(dist_all_2D[3]+dist_all_2D[4] > dist_all_2D[5]*Triangle_scale)   // 2 3 4��վ�ж�
-			&& !(dist_all_2D[3]+dist_all_2D[5] > dist_all_2D[4]*Triangle_scale) 
-			&& !(dist_all_2D[4]+dist_all_2D[5] > dist_all_2D[3]*Triangle_scale))
+	if(!(dist_all_2D[3]+dist_all_2D[4] > dist_all_2D[5]*triangle_scale_factor)   //Anchor 2,3,4 check
+			&& !(dist_all_2D[3]+dist_all_2D[5] > dist_all_2D[4]*triangle_scale_factor) 
+			&& !(dist_all_2D[4]+dist_all_2D[5] > dist_all_2D[3]*triangle_scale_factor))
 		return 0;	
 	
 
@@ -571,7 +623,7 @@ void CenterMass_Select(float (*points)[2], uint8_t len, float* result)
 	
 	len--;
 	Cal_massCenter(points,len,new_mass);
-	if(Cal_Dist(first_mass[0],first_mass[1],new_mass[0],new_mass[1]) < MASS_THRESH)
+	if(Cal_Dist(first_mass[0],first_mass[1],new_mass[0],new_mass[1]) < CENTER_MASS_THRESHOLD_M)
 	{
 		//����ų����Ǹ���Զ����������ĺ͵�һ�������������С���趨����ֵ�������һ������
 		result[0] = first_mass[0];
@@ -1126,7 +1178,7 @@ uint8_t Rtls_Cal_2D(Anchor_t *anc_list, float *point_out)
 	{
 		if(Cal_Taylor_2D(BS_buf_EN,BS_EN_num,x,y,taylor_result) != -1)
 		{
-			if(fabs(taylor_result[0]) + fabs(taylor_result[1]) < TAYLOR_2D_THRESH)
+			if(fabs(taylor_result[0]) + fabs(taylor_result[1]) < TAYLOR_2D_CONVERGENCE_THRESH_M)
 			{
 //				point_out[0] = x + taylor_result[0];
 //				point_out[1] = y + taylor_result[1];
@@ -1283,7 +1335,7 @@ uint8_t Rtls_Cal_3D(Anchor_t *anc_list ,float *point_out)
 	{
 		if(Cal_Taylor_3D(BS_buf_EN,BS_EN_num,x,y,z,taylor_result) != -1)
 		{
-			if(fabs(taylor_result[0]) + fabs(taylor_result[1] + fabs(taylor_result[2])) < TAYLOR_3D_THRESH)
+			if(fabs(taylor_result[0]) + fabs(taylor_result[1] + fabs(taylor_result[2])) < TAYLOR_3D_CONVERGENCE_THRESH_M)
 			{
 //				point_out[0] = x + taylor_result[0];
 //				point_out[1] = y + taylor_result[1];
