@@ -1,11 +1,59 @@
+/**
+ * @file    ds_twr.c
+ * @brief   Double-Sided Two-Way Ranging (DS-TWR) implementation
+ * 
+ * This file implements the DS-TWR protocol for high-precision distance measurement
+ * between UWB devices. DS-TWR provides improved accuracy over single-sided ranging
+ * by using multiple message exchanges to cancel out clock drift effects.
+ * 
+ * DS-TWR Protocol Sequence:
+ * 1. POLL message (Tag -> Anchor)
+ * 2. RESPONSE message (Anchor -> Tag) 
+ * 3. FINAL message (Tag -> Anchor)
+ * 
+ * @author  UWB PG3.9 project
+ * @date    2024
+ */
+
 #include "ds_twr.h"
 #include "filter.h"
+#include "../../drivers/decawave/deca_device_api.h"
+#include "../../drivers/decawave/deca_regs.h"
 #include <stdint.h>
 #include <stdbool.h>
+#include <string.h>
 
-uint8_t SYS_Calculate_ACTIVE_FLAG=0;   				//ϵͳѭ����־λ������ຯ��
-uint8_t DS_send_msg[DS_TX_BUF_LEN];  // DWM1000ͨѶ���ݰ�
-uint8_t DS_rx_buffer[DS_RX_BUF_LEN]; //DWM1000�������ݰ�������
+/*============================================================================
+ * GLOBAL VARIABLES
+ *============================================================================*/
+
+/** @brief System calculation state machine flag for DS-TWR process */
+uint8_t SYS_Calculate_ACTIVE_FLAG = 0;
+
+/** @brief DWM1000 communication transmit data buffer */
+uint8_t DS_send_msg[DS_TX_BUF_LEN];
+
+/** @brief DWM1000 communication receive data buffer */  
+uint8_t DS_rx_buffer[DS_RX_BUF_LEN];
+
+/*============================================================================
+ * PRIVATE CONSTANTS
+ *============================================================================*/
+
+/** @brief DS-TWR protocol identifiers */
+#define DS_TWR_POLL_MSG_ID      0xAB    ///< POLL message identifier
+#define DS_TWR_RESPONSE_MSG_ID  0xBC    ///< RESPONSE message identifier  
+#define DS_TWR_FINAL_MSG_ID     0xCD    ///< FINAL message identifier
+
+/** @brief Timeout and state values */
+#define DS_TWR_RX_TIMEOUT_UUS   9500    ///< Receive timeout in UWB microseconds
+#define DS_TWR_STATE_IDLE       0       ///< State machine idle state
+#define DS_TWR_STATE_TX_WAIT    1       ///< Waiting for transmission complete
+#define DS_TWR_STATE_RX_WAIT    2       ///< Waiting for reception complete
+
+/*============================================================================
+ * DS-TWR COMMUNICATION FUNCTIONS
+ *============================================================================*/
 
 
 
