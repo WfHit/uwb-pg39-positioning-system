@@ -10,7 +10,7 @@
  */
 
 #include "positioning_adapter.h"
-#include "../libraries/math_lib/include/arm_math.h"
+#include "../../libraries/math_lib/include/arm_math.h"
 #include <string.h>
 #include <math.h>
 

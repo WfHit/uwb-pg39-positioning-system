@@ -56,18 +56,18 @@ add_compile_definitions(
 
 # Core application sources
 set(CORE_SOURCES
-    uwb_main.c
-    hardware_interface.c
+    src/uwb_main.c
+    src/hardware_interface.c
 )
 
 # Core module sources
 file(GLOB_RECURSE CORE_MODULE_SOURCES
-    "core/*.c"
-    "tag_coordinator/*.c"
-    "anchor_manager/*.c"
-    "communication/*.c"
-    "ranging/*.c"
-    "utils/*.c"
+    "modules/core/*.c"
+    "modules/tag_coordinator/*.c"
+    "modules/anchor_manager/*.c"
+    "modules/communication/*.c"
+    "modules/ranging/*.c"
+    "modules/utils/*.c"
 )
 
 # Platform sources
@@ -80,7 +80,7 @@ file(GLOB_RECURSE PLATFORM_SOURCES
 
 # Positioning algorithm sources
 file(GLOB_RECURSE POSITIONING_SOURCES
-    "positioning/*.c"
+    "modules/positioning/*.c"
 )
 
 # DecaWave driver sources
@@ -117,17 +117,18 @@ set(ALL_SOURCES
 # Project include directories
 set(PROJECT_INCLUDES
     ${CMAKE_CURRENT_SOURCE_DIR}
-    core
-    tag_coordinator
-    anchor_manager
-    communication
-    ranging
-    utils
+    src
+    modules/core
+    modules/tag_coordinator
+    modules/anchor_manager
+    modules/communication
+    modules/ranging
+    modules/utils
     platform
     platform/flash
     platform/oled
     platform/delay
-    positioning
+    modules/positioning
     drivers/decawave
     drivers/decawave/platform
 )

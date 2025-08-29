@@ -1,5 +1,5 @@
 #include "uwb_main.h"
-#include "Utils/timing_utils.h"
+#include "../modules/utils/timing_utils.h"
 #include <string.h>
 
 // System state

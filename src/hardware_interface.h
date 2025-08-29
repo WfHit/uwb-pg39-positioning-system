@@ -14,8 +14,8 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "platform/flash/flash_config.h"
-#include "platform/oled/oled_display.h"
+#include "../platform/flash/flash_config.h"
+#include "../platform/oled/oled_display.h"
 
 #ifdef __cplusplus
 extern "C" {
