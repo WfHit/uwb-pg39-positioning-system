@@ -66,7 +66,6 @@ file(GLOB_RECURSE CORE_MODULE_SOURCES
     "modules/tag_coordinator/*.c"
     "modules/anchor_manager/*.c"
     "modules/communication/*.c"
-    "modules/ranging/*.c"
     "modules/utils/*.c"
 )
 
@@ -122,7 +121,6 @@ set(PROJECT_INCLUDES
     modules/tag_coordinator
     modules/anchor_manager
     modules/communication
-    modules/ranging
     modules/utils
     platform
     platform/flash

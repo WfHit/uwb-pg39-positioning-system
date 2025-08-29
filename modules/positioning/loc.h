@@ -15,8 +15,9 @@
 #ifndef __LOC_H
 #define __LOC_H
 
-#include "../core/data_types.h"
-#include "../core/system_config.h"
+#include "data_types.h"
+#include "system_config.h"
+#include <arm_math.h>
 #include <stdint.h>
 #include <stdbool.h>
 

@@ -1,8 +1,7 @@
-#ifndef __HDS_TWR_H
-#define __HDS_TWR_H
+#ifndef HDS_TWR_H
+#define HDS_TWR_H
 
-#include "twr.h"
-#include "../core/data_types.h"
+#include "data_types.h"
 #include <stdint.h>
 
 #define ANCHOR_WAITFINAL_MAX 120                         //��վ�ȴ�resp�����ʱ�� 0.1msΪ��λ

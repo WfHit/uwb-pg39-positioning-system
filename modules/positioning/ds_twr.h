@@ -14,7 +14,7 @@
 #define __DS_TWR_H
 
 #include "twr.h"
-#include "../core/data_types.h"
+#include "data_types.h"
 #include <stdint.h>
 
 /*============================================================================

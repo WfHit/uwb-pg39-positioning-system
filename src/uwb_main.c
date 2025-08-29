@@ -49,12 +49,15 @@ bool uwb_system_init(uint8_t device_mode, uint8_t device_id)
     current_device_mode = device_mode;
     current_device_id = device_id;
     
-    // Initialize ranging engine
-    if(!ranging_engine_init())
+    // Initialize positioning adapter (includes ranging functionality)
+    if(!positioning_adapter_init())
     {
         last_error = ERROR_COMMUNICATION;
         return false;
     }
+    
+    // Set device ID for ranging operations
+    positioning_adapter_set_device_id(device_id);
     
     // Initialize UART protocol
     if(!uart_protocol_init(UART_BAUDRATE))
@@ -93,9 +96,6 @@ bool uwb_system_init(uint8_t device_mode, uint8_t device_id)
 void uwb_system_process(void)
 {
     if(!system_initialized) return;
-    
-    // Process ranging engine
-    ranging_engine_process();
     
     // Process UART communication
     uart_protocol_process();
@@ -180,7 +180,9 @@ bool is_system_ready(void)
 {
     if(!system_initialized) return false;
     
-    bool ranging_ready = ranging_engine_is_ready();
+    // Note: positioning adapter doesn't have a specific ready check
+    // We assume it's ready if initialized successfully
+    bool positioning_ready = true;
     bool uart_ready = is_uart_ready();
     
     bool mode_ready = false;
@@ -194,7 +196,7 @@ bool is_system_ready(void)
             break;
     }
     
-    return ranging_ready && uart_ready && mode_ready;
+    return positioning_ready && uart_ready && mode_ready;
 }
 
 bool load_configuration_from_flash(void)

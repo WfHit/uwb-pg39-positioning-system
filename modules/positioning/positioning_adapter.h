@@ -12,8 +12,8 @@
 #ifndef POSITIONING_ADAPTER_H
 #define POSITIONING_ADAPTER_H
 
-#include "../core/data_types.h"
-#include "../core/system_config.h"
+#include "data_types.h"
+#include "system_config.h"
 #include "loc.h"
 #include "ds_twr.h"
 #include "hds_twr.h"
@@ -213,8 +213,8 @@ bool positioning_adapter_validate_result(const positioning_result_t* result);
  * @param successful_calculations Pointer to store successful calculation count
  * @param success_rate Pointer to store success rate (0.0 to 1.0)
  */
-void positioning_adapter_get_statistics(uint32_t* total_calculations,
-                                       uint32_t* successful_calculations,
+void positioning_adapter_get_statistics(uint32_t* total_calculations_out,
+                                       uint32_t* successful_calculations_out,
                                        float* success_rate);
 
 /**
@@ -243,6 +243,43 @@ void positioning_adapter_convert_anchor_data(const discovered_anchor_t* discover
  * @return Recommended positioning algorithm
  */
 positioning_algorithm_t positioning_adapter_select_algorithm(uint8_t anchor_count, bool has_3d_anchors);
+
+/**
+ * @brief Set device ID for ranging operations
+ * @param device_id Device identifier for TWR operations
+ */
+void positioning_adapter_set_device_id(uint8_t device_id);
+
+/*============================================================================
+ * RANGING COMPATIBILITY FUNCTIONS
+ *============================================================================*/
+
+/**
+ * @brief Send frame via UWB (compatibility wrapper)
+ * @param data Frame data to send
+ * @param length Frame length in bytes
+ * @return true if successful, false otherwise
+ */
+bool ranging_send_frame(const uint8_t* data, uint16_t length);
+
+/**
+ * @brief Receive frame via UWB (compatibility wrapper)
+ * @param buffer Buffer to store received data
+ * @param buffer_size Buffer size in bytes
+ * @param rssi Pointer to store RSSI value
+ * @param timeout_ms Timeout in milliseconds
+ * @return true if frame received, false on timeout
+ */
+bool ranging_receive_frame(uint8_t* buffer, uint16_t buffer_size, int8_t* rssi, uint32_t timeout_ms);
+
+/**
+ * @brief Measure distance to anchor (compatibility wrapper)
+ * @param anchor_id Target anchor ID
+ * @param distance_mm Pointer to store measured distance in millimeters
+ * @param algorithm_used Pointer to store algorithm used
+ * @return true if measurement successful, false otherwise
+ */
+bool ranging_measure_distance(uint8_t anchor_id, uint32_t* distance_mm, uint8_t* algorithm_used);
 
 #ifdef __cplusplus
 }

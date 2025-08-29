@@ -1,8 +1,8 @@
 #include "tag_coordinator.h"
-#include "../Communication/uart_protocol.h"
-#include "../Ranging/ranging_engine.h"
-#include "../Utils/geometry_utils.h"
-#include "../Utils/timing_utils.h"
+#include "../communication/uart_protocol.h"
+#include "../positioning/positioning_adapter.h"
+#include "../utils/geometry_utils.h"
+#include "../utils/timing_utils.h"
 #include <string.h>
 #include <math.h>
 

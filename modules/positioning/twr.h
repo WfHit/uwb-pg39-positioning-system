@@ -13,9 +13,9 @@
 #ifndef __TWR_H
 #define __TWR_H
 
-#include "../core/data_types.h"
-#include "../core/system_config.h"
-#include "../../drivers/decawave/deca_device_api.h"
+#include "data_types.h"
+#include "system_config.h"
+#include <deca_device_api.h>
 #include <stdint.h>
 #include <stdbool.h>
 

@@ -1,8 +1,9 @@
 #ifndef GEOMETRY_UTILS_H
 #define GEOMETRY_UTILS_H
 
-#include "../Core/system_config.h"
-#include "../Core/data_types.h"
+#include "system_config.h"
+#include "data_types.h"
+#include <stdint.h>
 #include <math.h>
 
 // Geometric calculations

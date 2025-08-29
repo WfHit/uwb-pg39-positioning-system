@@ -15,7 +15,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "../core/data_types.h"
+#include "data_types.h"
 
 /*============================================================================
  * TYPE DEFINITIONS

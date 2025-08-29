@@ -1,8 +1,8 @@
 #ifndef UART_PROTOCOL_H
 #define UART_PROTOCOL_H
 
-#include "../Core/system_config.h"
-#include "../Core/data_types.h"
+#include "system_config.h"
+#include "data_types.h"
 
 // Function Declarations
 bool uart_protocol_init(uint32_t baudrate);

@@ -1,8 +1,8 @@
 #ifndef ANCHOR_MANAGER_H
 #define ANCHOR_MANAGER_H
 
-#include "../Core/system_config.h"
-#include "../Core/data_types.h"
+#include "system_config.h"
+#include "data_types.h"
 
 // Function Declarations
 bool anchor_manager_init(uint8_t anchor_id, uint8_t zone_id, const position_t* position);

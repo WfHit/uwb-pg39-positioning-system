@@ -15,7 +15,7 @@
 #include "platform/oled/oled_display.h"
 #include "platform/spi.h"
 #include "platform/delay/Delay.h"
-#include "drivers/decawave/deca_device_api.h"
+#include <deca_device_api.h>
 #include <string.h>
 
 /*============================================================================

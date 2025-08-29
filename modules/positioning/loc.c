@@ -17,7 +17,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include "loc.h"
-#include "../../libraries/math_lib/include/arm_math.h"
+#include <arm_math.h>
 #include "array.h"
 
 /*============================================================================

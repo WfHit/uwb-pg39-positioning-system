@@ -17,8 +17,8 @@
 
 #include "ds_twr.h"
 #include "filter.h"
-#include "../../drivers/decawave/deca_device_api.h"
-#include "../../drivers/decawave/deca_regs.h"
+#include <deca_device_api.h>
+#include <deca_regs.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <string.h>

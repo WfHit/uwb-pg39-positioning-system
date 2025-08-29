@@ -6,7 +6,7 @@
 #include "../modules/tag_coordinator/tag_coordinator.h"
 #include "../modules/anchor_manager/anchor_manager.h"
 #include "../modules/communication/uart_protocol.h"
-#include "../modules/ranging/ranging_engine.h"
+#include "../modules/positioning/positioning_adapter.h"
 
 // Application initialization
 bool uwb_system_init(uint8_t device_mode, uint8_t device_id);

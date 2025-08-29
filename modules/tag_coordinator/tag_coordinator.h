@@ -1,8 +1,8 @@
 #ifndef TAG_COORDINATOR_H
 #define TAG_COORDINATOR_H
 
-#include "../Core/system_config.h"
-#include "../Core/data_types.h"
+#include "system_config.h"
+#include "data_types.h"
 
 // Function Declarations
 bool tag_coordinator_init(uint8_t tag_id);

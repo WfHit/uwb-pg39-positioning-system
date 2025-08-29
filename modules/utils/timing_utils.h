@@ -1,7 +1,7 @@
 #ifndef TIMING_UTILS_H
 #define TIMING_UTILS_H
 
-#include "../Core/system_config.h"
+#include "system_config.h"
 #include <stdint.h>
 
 // System timing functions
