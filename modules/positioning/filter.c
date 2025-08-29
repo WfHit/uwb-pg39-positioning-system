@@ -1,118 +1,145 @@
+/**
+ * @file    filter.c
+ * @brief   Distance and position filtering algorithms for UWB positioning
+ * 
+ * This file implements various filtering algorithms used to smooth and improve
+ * the accuracy of distance measurements and position calculations in the UWB
+ * positioning system. Includes outlier rejection and Kalman filtering.
+ * 
+ * @author  UWB PG3.9 project
+ * @date    2024
+ */
+
 #include "filter.h"
 #include <stdint.h>
 #include <stdbool.h>
 
+/*============================================================================
+ * GLOBAL VARIABLES
+ *============================================================================*/
+
+/** @brief Array of tag distance filtering buffers for all tracked tags */
 Tag_t tag_DistList[TAG_USE_MAX_NUM];
 
-/*! ------------------------------------------------------------------------------------------------------------------
- * @brief ����ȥ��ֵȡ��ֵ�˲�
- *
- * input parameters
- * @param index    ��ǩID 
- * @param dist_now ���β�þ��� 
- * output parameters
- * �˲���ľ���ֵ
+/*============================================================================
+ * DISTANCE FILTERING FUNCTIONS
+ *============================================================================*/
+
+/**
+ * @brief Average filter with outlier rejection
+ * 
+ * Implements a simple 3-sample average filter that removes the highest and
+ * lowest values to reduce the impact of measurement outliers. Maintains a
+ * circular buffer of the last 3 measurements per tag.
+ * 
+ * @param index Tag ID (index into tag_DistList array)
+ * @param dist_now Current distance measurement in meters
+ * @return Filtered distance value (average of remaining sample after outlier removal)
  */
-float Average_ex(int index, float dist_now)
+float Distance_Filter(int index, float dist_now)
 {
 	float result = 0;
-
-	float max,min;
+	float max, min;
 	char i;
-	Tag_t *t = &tag_DistList[index];
+	Tag_t *tag = &tag_DistList[index];
 	
-	if(t->Dist_index >= 3)
-	 t->Dist_index = 0;
+	// Update circular buffer index (0, 1, 2, 0, 1, 2...)
+	if(tag->Dist_index >= 3)
+		tag->Dist_index = 0;
 
-	t->Dist[t->Dist_index] = dist_now;  //���뱾�β��ֵ
+	// Store current measurement in circular buffer
+	tag->Dist[tag->Dist_index] = dist_now;
+	tag->Dist_index = tag->Dist_index + 1;
 	
-	t->Dist_index = t->Dist_index + 1;
-	
-	//�ҵ������Сֵ
-	max = t->Dist[0];
+	// Find max, min, and sum of all 3 samples
+	max = tag->Dist[0];
 	min = max;
 	result = max;
-	for(i = 1;i < 3;i++)
-	{
-		if(max < t->Dist[i])
-			max = t->Dist[i];
-		if(min > t->Dist[i])
-			min = t->Dist[i];
-		result += t->Dist[i];
+	
+	for(i = 1; i < 3; i++) {
+		if(max < tag->Dist[i])
+			max = tag->Dist[i];
+		if(min > tag->Dist[i])
+			min = tag->Dist[i];
+		result += tag->Dist[i];
 	}
+	
+	// Return average of remaining sample (total - max - min)
 	return (result - max - min);
 }
 
-/*! ------------------------------------------------------------------------------------------------------------------
- * @brief �������˲� ģ��Ϊ����λ�ú���һ����ͬ
- *
- * input parameters
- * @param ResrcData    ���μ���õ�λ������
- * @param ProcessNiose_Q �趨�Ĺ������� ����������Q
- * @param ProcessNiose_Q �趨�Ĳ������� ����������R
- * @param idx ��ǩID
- * @param mode �˲����� 0�˲�����x���� 1�˲�y���� 2�˲�z����
- * output parameters
- * �˲����Ӧ������ֵ
+/*============================================================================
+ * POSITION FILTERING FUNCTIONS  
+ *============================================================================*/
+
+/**
+ * @brief 1D Kalman filter for position coordinates
+ * 
+ * Implements a simple 1D Kalman filter for smoothing position coordinates.
+ * Each tag maintains separate filter states for X, Y, and Z coordinates.
+ * The filter helps reduce noise in position calculations.
+ * 
+ * @param measurement Current measurement value (coordinate)
+ * @param process_noise_q Process noise variance (system uncertainty)
+ * @param measurement_noise_r Measurement noise variance (sensor uncertainty)  
+ * @param tag_idx Tag ID (index into tag_DistList array)
+ * @param coordinate_mode Filter mode: 0=X, 1=Y, 2=Z coordinate
+ * @return Filtered coordinate value
  */
-float KalmanFilter(const float ResrcData,float ProcessNiose_Q,float MeasureNoise_R, char idx, char mode)
+float Position_KalmanFilter(const float measurement, float process_noise_q, 
+                           float measurement_noise_r, char tag_idx, char coordinate_mode)
 {
-
-    float R = MeasureNoise_R;
-    float Q = ProcessNiose_Q;
+    const float R = measurement_noise_r;  // Measurement noise variance
+    const float Q = process_noise_q;      // Process noise variance
      
-	Tag_t *t = &tag_DistList[idx];
+	Tag_t *tag = &tag_DistList[tag_idx];
 	
-    float last_data;
-    float filter_data;
+    float last_estimate;
+    float filtered_value;
+    float prediction_variance;
+    float current_variance;
+    float kalman_gain;
 
-    float p_mid;
-    float p_now;
-
-    float kg;
-
-	//����ģʽд����Ϣ
-	if(mode == 0)
-	{
-		last_data = t->last_x;                       
-		p_mid = t->p_last_x + Q;          //Ԥ�Ȿ�����
-	}      
-	else if(mode == 1)
-	{
-		last_data = t->last_y; 
-		p_mid = t->p_last_y + Q;         //Ԥ�Ȿ�����
-	}			
-	else if(mode == 2)
-	{
-		last_data = t->last_z;
-		p_mid = t->p_last_z + Q;         //Ԥ�Ȿ�����
+	// Get previous state based on coordinate mode
+	switch(coordinate_mode) {
+		case 0: // X coordinate
+			last_estimate = tag->last_x;                       
+			prediction_variance = tag->p_last_x + Q;
+			break;
+		case 1: // Y coordinate
+			last_estimate = tag->last_y; 
+			prediction_variance = tag->p_last_y + Q;
+			break;
+		case 2: // Z coordinate
+			last_estimate = tag->last_z;
+			prediction_variance = tag->p_last_z + Q;
+			break;
+		default:
+			return measurement; // Invalid mode, return raw measurement
 	}
 
-
-	//����
-	kg = p_mid/(p_mid+R);             //���±��ο���������    
-	filter_data=last_data+kg*(ResrcData-last_data);   //���ݱ��ι۲�ֵԤ�Ȿ�����
-	p_now=(1-kg)*p_mid;               //�������  
+	// Kalman filter update equations
+	kalman_gain = prediction_variance / (prediction_variance + R);
+	filtered_value = last_estimate + kalman_gain * (measurement - last_estimate);
+	current_variance = (1 - kalman_gain) * prediction_variance;
 		
-	//�����˲���Ϣ
-	if(mode == 0)
-	{
-		t->last_x = filter_data;                       
-		t->p_last_x = p_now;  
-	}      
-	else if(mode == 1)
-	{
-		t->last_y = filter_data;                       
-		t->p_last_y = p_now;
-	}			
-	else if(mode == 2)
-	{
-		t->last_z = filter_data;                       
-		t->p_last_z = p_now;
-	}	
+	// Save filter state based on coordinate mode
+	switch(coordinate_mode) {
+		case 0: // X coordinate
+			tag->last_x = filtered_value;                       
+			tag->p_last_x = current_variance;
+			break;
+		case 1: // Y coordinate
+			tag->last_y = filtered_value;                       
+			tag->p_last_y = current_variance;
+			break;
+		case 2: // Z coordinate
+			tag->last_z = filtered_value;                       
+			tag->p_last_z = current_variance;
+			break;
+	}
 		
-    return filter_data;
-
+    return filtered_value;
 }
 
 

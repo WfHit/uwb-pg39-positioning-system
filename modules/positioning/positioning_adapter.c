@@ -332,7 +332,7 @@ bool positioning_adapter_hds_twr_measure(uint8_t anchor_id, uint32_t* distance_m
 
 uint32_t positioning_adapter_filter_distance(uint8_t tag_id, uint32_t distance_mm)
 {
-    // Interface with original filtering functions
+    // Interface with filtering functions
     float distance_filtered = Distance_Filter(tag_id, (float)distance_mm / 1000.0f);
     return (uint32_t)(distance_filtered * 1000.0f);
 }
