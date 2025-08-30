@@ -1,11 +1,11 @@
 /**
  * @file    twr.h
  * @brief   Two-Way Ranging (TWR) base definitions and structures
- * 
+ *
  * This header defines common structures, constants, and functions used by
  * both DS-TWR and HDS-TWR implementations. Contains timing calculations,
  * data structures, and utility functions for UWB ranging operations.
- * 
+ *
  * @author  UWB PG3.9 project
  * @date    2024
  */
@@ -35,7 +35,7 @@ typedef uint64_t uint64;
 
 /**
  * @brief UWB microsecond (uus) to device time unit (dtu) conversion factor
- * 
+ *
  * UWB microsecond (UUS) to device time unit (DTU, around 15.65 ps) conversion factor.
  * 1 uus = 512 / 499.2 μs and 1 μs = 499.2 * 128 dtu.
  */
@@ -62,15 +62,15 @@ typedef uint64_t uint64;
 
 /**
  * @brief Calculation result data structure for positioning
- * 
+ *
  * This structure stores the positioning calculation results including
  * success flags, coordinates, and distance measurements for each tag.
  */
-typedef struct 
+typedef struct
 {
 	uint32_t Cal_Flag;                      ///< Calculation success flags (8-bit field, bit 1=success, bits 0-7 represent anchors A-H success)
 	int16_t x;                              ///< Calculated X coordinate in centimeters
-	int16_t y;                              ///< Calculated Y coordinate in centimeters  
+	int16_t y;                              ///< Calculated Y coordinate in centimeters
 	int16_t z;                              ///< Calculated Z coordinate in centimeters
 	uint16_t Dist[ANCHOR_LIST_COUNT];       ///< Distance measurements from tag to anchors A-H
 } Cal_data_t;
@@ -122,7 +122,7 @@ extern char Tag_Usart_Str[TAG_USART_BUF_MAXLEN];
 
 /**
  * @brief Prepare tag positioning result for UART output
- * 
+ *
  * @param now_data Pointer to calculation data structure to output
  * @param format Output format selection
  * @param mode Output mode selection
@@ -131,7 +131,7 @@ void Prepare_tag_result_output(Cal_data_t* now_data, uint8_t format, uint8_t mod
 
 /**
  * @brief Extract timestamp from final message timestamp field
- * 
+ *
  * @param ts_field Pointer to timestamp field in message
  * @param ts Pointer to extracted timestamp value
  */
@@ -139,29 +139,29 @@ void final_msg_get_ts(const uint8_t *ts_field, uint32_t *ts);
 
 /**
  * @brief Extract distance from final message distance field
- * 
- * @param ts_field Pointer to distance field in message  
+ *
+ * @param ts_field Pointer to distance field in message
  * @param dist Pointer to extracted distance value
  */
 void final_msg_get_dist(const uint8_t *ts_field, uint32_t *dist);
 
 /**
  * @brief Get transmission timestamp as 64-bit value
- * 
+ *
  * @return 64-bit transmission timestamp
  */
 uint64 get_tx_timestamp_u64(void);
 
 /**
  * @brief Get reception timestamp as 64-bit value
- * 
+ *
  * @return 64-bit reception timestamp
  */
 uint64 get_rx_timestamp_u64(void);
 
 /**
  * @brief Set timestamp in final message timestamp field
- * 
+ *
  * @param ts_field Pointer to timestamp field in message
  * @param ts Timestamp value to set
  */
@@ -169,7 +169,7 @@ void final_msg_set_ts(uint8_t *ts_field, uint32_t ts);
 
 /**
  * @brief Set distance in final message distance field
- * 
+ *
  * @param ts_field Pointer to distance field in message
  * @param dist Distance value to set
  */
@@ -177,7 +177,7 @@ void final_msg_set_dist(uint8_t *ts_field, uint32_t dist);
 
 /**
  * @brief Calculate distance using TWR algorithm
- * 
+ *
  * @param tag_id Tag identifier for calculation
  * @param cal_dist Pointer to calculated distance result
  * @return Calculation status code
@@ -186,8 +186,8 @@ int16_t Twr_CalDist(uint8_t tag_id, uint16_t *cal_dist);
 
 /**
  * @brief Calculate distance using ranging algorithm
- * 
- * @param cal_dist Pointer to calculated distance result  
+ *
+ * @param cal_dist Pointer to calculated distance result
  * @return Calculation status code
  */
 int16_t Range_CalDist(uint16_t *cal_dist);

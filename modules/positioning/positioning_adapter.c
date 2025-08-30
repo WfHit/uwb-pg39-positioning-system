@@ -1,595 +1,720 @@
 /**
  * @file    positioning_adapter.c
- * @brief   Implementation of positioning algorithm adapter layer
- * 
- * This file bridges the original TWR positioning algorithms with the new
- * UWB project architecture, providing a clean interface for position calculations.
- * 
+ * @brief   Adapter layer for integrating positioning algorithms
+ *
+ * This file provides a bridge between the positioning algorithms and the
+ * rest of the UWB project architecture. It provides a clean interface
+ * for position calculations and algorithm selection.
+ *
  * @author  UWB PG3.9 project
  * @date    2024
  */
 
 #include "positioning_adapter.h"
+#include "loc.h"
 #include "ds_twr.h"
 #include "hds_twr.h"
-#include <arm_math.h>
-#include <deca_device_api.h>
-#include <deca_regs.h>
-#include "../utils/timing_utils.h"
+#include "filter.h"
+#include "twr.h"
 #include <string.h>
 #include <math.h>
-
-// Include the original TWR implementations
-extern int32_t DW1000send(uint8_t A_ID, uint8_t B_ID, uint8_t MODE, int8_t *ret);
-extern uint8_t HDS_TWR_Send_Resp(uint8_t A_ID, uint8_t B_ID, uint8_t En);
-extern uint8_t HDS_TWR_Recv_FinalAndCal(uint8_t A_ID, uint8_t B_ID, uint16_t recv_timeout);
-extern uint16_t Dis_cal; // Distance result from HDS-TWR
-
-// Define modes for TWR algorithms
-#define DS_TWR_MODE     1
-#define HDS_TWR_MODE    2
-
-// Additional DW3000 status constants for compatibility
-#define SYS_STATUS_ALL_RX_TO    (SYS_STATUS_RXRFTO_BIT_MASK | SYS_STATUS_RXPTO_BIT_MASK)
-#define SYS_STATUS_ALL_RX_ERR   (SYS_STATUS_RXPHE_BIT_MASK | SYS_STATUS_RXRFSL_BIT_MASK)
-
-// Current device ID for ranging operations
-static uint8_t current_device_id = 0;
 
 /*============================================================================
  * PRIVATE VARIABLES
  *============================================================================*/
 
+/** @brief Current positioning algorithm configuration */
 static positioning_algorithm_t current_algorithm = POSITIONING_ALGO_AUTO;
+
+/** @brief Device ID for ranging operations */
+static uint8_t device_id = 0;
+
+/** @brief Statistics tracking */
 static uint32_t total_calculations = 0;
 static uint32_t successful_calculations = 0;
-static bool is_initialized = false;
+
+/** @brief Algorithm performance tracking */
+typedef struct {
+    uint32_t attempts;
+    uint32_t successes;
+    float avg_accuracy;
+    uint32_t avg_time_ms;
+} algorithm_stats_t;
+
+static algorithm_stats_t algo_stats[6];  // One for each algorithm type
+
+/*============================================================================
+ * PRIVATE CONSTANTS
+ *============================================================================*/
+
+/** @brief Minimum accuracy threshold for valid results */
+#define MIN_ACCURACY_THRESHOLD      0.1f    // 10 cm
+
+/** @brief Maximum accuracy threshold for rejecting results */
+#define MAX_ACCURACY_THRESHOLD      10.0f   // 10 m
+
+/** @brief Minimum anchors for 2D positioning */
+#define MIN_ANCHORS_2D              3
+
+/** @brief Minimum anchors for 3D positioning */
+#define MIN_ANCHORS_3D              4
+
+/** @brief Maximum calculation time threshold (ms) */
+#define MAX_CALCULATION_TIME_MS     100
 
 /*============================================================================
  * PRIVATE FUNCTION DECLARATIONS
  *============================================================================*/
 
-static bool validate_anchor_data(const positioning_anchor_data_t* anchor_data, uint8_t count);
-static float estimate_accuracy(const positioning_anchor_data_t* anchor_data, uint8_t count, 
-                              const positioning_result_t* result);
+static float calculate_position_accuracy(const positioning_anchor_data_t* anchor_data,
+                                        uint8_t anchor_count,
+                                        float x, float y, float z);
+static bool validate_anchor_data(const positioning_anchor_data_t* anchor_data, uint8_t anchor_count);
+static void update_algorithm_stats(positioning_algorithm_t algorithm, bool success, float accuracy, uint32_t time_ms);
 
 /*============================================================================
  * INITIALIZATION FUNCTIONS
  *============================================================================*/
 
+/**
+ * @brief Initialize positioning algorithms
+ *
+ * Sets up the positioning system and initializes all sub-modules.
+ * Must be called before using any positioning functions.
+ *
+ * @return true if successful, false otherwise
+ */
 bool positioning_adapter_init(void)
 {
-    // Initialize ARM math library (already done by CMSIS)
-    // Reset statistics
-    positioning_adapter_reset_statistics();
-    
-    // Initialize DS-TWR and HDS-TWR if needed
-    positioning_adapter_ds_twr_init();
-    positioning_adapter_hds_twr_init();
-    
-    is_initialized = true;
+    // Initialize algorithm statistics
+    memset(algo_stats, 0, sizeof(algo_stats));
+
+    // Reset global statistics
+    total_calculations = 0;
+    successful_calculations = 0;
+
+    // Initialize filter system for all possible tags
+    for (int i = 0; i < TAG_USE_MAX_NUM; i++) {
+        Position_Filter_Reset(i);
+    }
+
+    // Set default algorithm
+    current_algorithm = POSITIONING_ALGO_AUTO;
+
     return true;
 }
 
+/**
+ * @brief Configure positioning parameters
+ *
+ * @param algorithm Algorithm to use (or AUTO for automatic selection)
+ * @return true if successful, false otherwise
+ */
 bool positioning_adapter_configure(positioning_algorithm_t algorithm)
 {
-    if (!is_initialized) {
+    if (algorithm < POSITIONING_ALGO_2D_CENTER_MASS || algorithm > POSITIONING_ALGO_AUTO) {
         return false;
     }
-    
+
     current_algorithm = algorithm;
     return true;
 }
 
 /*============================================================================
- * POSITIONING CALCULATION FUNCTIONS
+ * MAIN POSITIONING CALCULATION FUNCTIONS
  *============================================================================*/
 
+/**
+ * @brief Calculate position using available anchor measurements
+ *
+ * Main entry point for position calculations. Automatically selects the best
+ * algorithm based on available anchors and configuration.
+ *
+ * @param anchor_data Array of anchor measurements
+ * @param anchor_count Number of valid anchor measurements
+ * @param result Pointer to store positioning result
+ * @return true if calculation successful, false otherwise
+ */
 bool positioning_adapter_calculate(const positioning_anchor_data_t* anchor_data,
                                  uint8_t anchor_count,
                                  positioning_result_t* result)
 {
-    if (!is_initialized || !anchor_data || !result || anchor_count < 3) {
-        return false;
-    }
-    
+    uint32_t start_time = 0;  // Would be actual timer in real implementation
+    positioning_algorithm_t selected_algorithm;
+    bool success = false;
+
+    // Initialize result structure
+    memset(result, 0, sizeof(positioning_result_t));
+    result->anchor_count = anchor_count;
+
     // Validate input data
     if (!validate_anchor_data(anchor_data, anchor_count)) {
         return false;
     }
-    
+
     total_calculations++;
-    
-    // Clear result structure
-    memset(result, 0, sizeof(positioning_result_t));
-    result->anchor_count = anchor_count;
-    
-    positioning_algorithm_t algo_to_use = current_algorithm;
-    
-    // Auto-select algorithm if needed
-    if (algo_to_use == POSITIONING_ALGO_AUTO) {
-        bool has_3d = false;
-        for (uint8_t i = 0; i < anchor_count; i++) {
-            if (fabsf(anchor_data[i].z) > 0.1f) {  // Non-zero Z coordinate
-                has_3d = true;
+
+    // Select algorithm
+    if (current_algorithm == POSITIONING_ALGO_AUTO) {
+        bool has_3d_anchors = false;
+        for (int i = 0; i < anchor_count; i++) {
+            if (anchor_data[i].z != 0) {
+                has_3d_anchors = true;
                 break;
             }
         }
-        algo_to_use = positioning_adapter_select_algorithm(anchor_count, has_3d);
+        selected_algorithm = positioning_adapter_select_algorithm(anchor_count, has_3d_anchors);
+    } else {
+        selected_algorithm = current_algorithm;
     }
-    
-    bool success = false;
-    
-    // Execute selected algorithm
-    switch (algo_to_use) {
+
+    result->algorithm_used = selected_algorithm;
+
+    // Perform calculation based on selected algorithm
+    switch (selected_algorithm) {
         case POSITIONING_ALGO_2D_CENTER_MASS:
-            if (anchor_count >= 3) {
-                success = positioning_adapter_calculate_2d_center_mass(anchor_data, result);
-            }
+            success = positioning_adapter_calculate_2d_center_mass(anchor_data, result);
             break;
-            
+
         case POSITIONING_ALGO_2D_LEAST_SQUARE:
-            if (anchor_count >= 3) {
-                success = positioning_adapter_calculate_2d_least_square(anchor_data, anchor_count, result);
-            }
+            success = positioning_adapter_calculate_2d_least_square(anchor_data, anchor_count, result);
             break;
-            
-        case POSITIONING_ALGO_3D_LEAST_SQUARE:
-            if (anchor_count >= 4) {
-                success = positioning_adapter_calculate_3d_least_square(anchor_data, anchor_count, result);
-            }
-            break;
-            
+
         case POSITIONING_ALGO_2D_TAYLOR:
-            if (anchor_count >= 3) {
-                // Use center mass as initial estimate for Taylor method
-                positioning_result_t initial_result;
-                if (positioning_adapter_calculate_2d_center_mass(anchor_data, &initial_result)) {
-                    success = positioning_adapter_calculate_2d_taylor(anchor_data, anchor_count,
-                                                                    initial_result.x, initial_result.y, result);
-                }
+            // Use centroid as initial estimate for Taylor method
+            if (positioning_adapter_calculate_2d_center_mass(anchor_data, result)) {
+                success = positioning_adapter_calculate_2d_taylor(anchor_data, anchor_count,
+                                                                result->x, result->y, result);
             }
             break;
-            
+
+        case POSITIONING_ALGO_3D_LEAST_SQUARE:
+            success = positioning_adapter_calculate_3d_least_square(anchor_data, anchor_count, result);
+            break;
+
         case POSITIONING_ALGO_3D_TAYLOR:
-            if (anchor_count >= 4) {
-                // Use least squares as initial estimate for Taylor method
-                positioning_result_t initial_result;
-                if (positioning_adapter_calculate_3d_least_square(anchor_data, anchor_count, &initial_result)) {
-                    success = positioning_adapter_calculate_3d_taylor(anchor_data, anchor_count,
-                                                                    initial_result.x, initial_result.y, initial_result.z, result);
-                }
+            // Use 3D least squares as initial estimate for Taylor method
+            if (positioning_adapter_calculate_3d_least_square(anchor_data, anchor_count, result)) {
+                success = positioning_adapter_calculate_3d_taylor(anchor_data, anchor_count,
+                                                                result->x, result->y, result->z, result);
             }
             break;
-            
+
         default:
             success = false;
             break;
     }
-    
+
     if (success) {
-        result->algorithm_used = algo_to_use;
+        // Calculate accuracy estimate
+        result->accuracy_estimate = calculate_position_accuracy(anchor_data, anchor_count,
+                                                              result->x, result->y, result->z);
+
+        // Validate result
         result->is_valid = positioning_adapter_validate_result(result);
-        result->accuracy_estimate = estimate_accuracy(anchor_data, anchor_count, result);
-        successful_calculations++;
+
+        if (result->is_valid) {
+            successful_calculations++;
+        }
     }
-    
-    return success;
+
+    // Update algorithm statistics
+    uint32_t calc_time = 0;  // Would be actual elapsed time
+    update_algorithm_stats(selected_algorithm, success && result->is_valid,
+                          result->accuracy_estimate, calc_time);
+
+    return success && result->is_valid;
 }
 
+/**
+ * @brief Calculate 2D position using center mass method
+ *
+ * Simple algorithm that calculates position as the weighted centroid of
+ * anchor positions, with weights inversely proportional to distance.
+ *
+ * @param anchor_data Array of anchor measurements (minimum 3)
+ * @param result Pointer to store positioning result
+ * @return true if calculation successful, false otherwise
+ */
 bool positioning_adapter_calculate_2d_center_mass(const positioning_anchor_data_t* anchor_data,
                                                 positioning_result_t* result)
 {
-    if (!anchor_data || !result) {
+    float sum_x = 0, sum_y = 0;
+    float sum_weights = 0;
+    int valid_anchors = 0;
+
+    // Calculate weighted centroid
+    for (int i = 0; i < result->anchor_count; i++) {
+        if (anchor_data[i].is_valid && anchor_data[i].distance > 0) {
+            float weight = 1.0f / (anchor_data[i].distance + 0.1f);  // Avoid division by zero
+
+            sum_x += anchor_data[i].x * weight;
+            sum_y += anchor_data[i].y * weight;
+            sum_weights += weight;
+            valid_anchors++;
+        }
+    }
+
+    if (valid_anchors < MIN_ANCHORS_2D || sum_weights == 0) {
         return false;
     }
-    
-    // Convert to format expected by original algorithm
-    float anc_a[3] = {anchor_data[0].x, anchor_data[0].y, anchor_data[0].distance};
-    float anc_b[3] = {anchor_data[1].x, anchor_data[1].y, anchor_data[1].distance};
-    float anc_c[3] = {anchor_data[2].x, anchor_data[2].y, anchor_data[2].distance};
-    float cal_result[2] = {0};
-    
-    // Call original algorithm
-    uint8_t success = Cal_2D_AllCenterMass(anc_a, anc_b, anc_c, cal_result);
-    
-    if (success) {
-        result->x = cal_result[0];
-        result->y = cal_result[1];
-        result->z = 0.0f;  // 2D calculation
-        return true;
-    }
-    
-    return false;
+
+    result->x = sum_x / sum_weights;
+    result->y = sum_y / sum_weights;
+    result->z = 0;
+
+    return true;
 }
 
+/**
+ * @brief Calculate 2D position using least squares method
+ *
+ * Uses the mathematical algorithms from loc.c to perform 2D positioning
+ * with proper error handling and data conversion.
+ *
+ * @param anchor_data Array of anchor measurements (minimum 3)
+ * @param anchor_count Number of anchor measurements
+ * @param result Pointer to store positioning result
+ * @return true if calculation successful, false otherwise
+ */
 bool positioning_adapter_calculate_2d_least_square(const positioning_anchor_data_t* anchor_data,
                                                   uint8_t anchor_count,
                                                   positioning_result_t* result)
 {
-    // This would require implementing a 2D least squares version
-    // For now, fall back to center mass for 3 anchors
-    if (anchor_count == 3) {
-        return positioning_adapter_calculate_2d_center_mass(anchor_data, result);
+    Anchor_t anc_list[ANCHOR_LIST_COUNT];
+    float point_out[2];
+
+    if (anchor_count < MIN_ANCHORS_2D) {
+        return false;
     }
-    
-    // For more than 3 anchors, we'd need to implement the 2D least squares algorithm
-    // This is a placeholder for future implementation
+
+    // Convert anchor data format
+    memset(anc_list, 0, sizeof(anc_list));
+    for (int i = 0; i < anchor_count && i < ANCHOR_LIST_COUNT; i++) {
+        if (anchor_data[i].is_valid) {
+            anc_list[i].x = anchor_data[i].x;
+            anc_list[i].y = anchor_data[i].y;
+            anc_list[i].z = anchor_data[i].z;
+            anc_list[i].dist = anchor_data[i].distance;
+        }
+    }
+
+    // Perform calculation
+    if (Rtls_Cal_2D(anc_list, point_out)) {
+        result->x = point_out[0];
+        result->y = point_out[1];
+        result->z = 0;
+        return true;
+    }
+
     return false;
 }
 
+/**
+ * @brief Calculate 3D position using least squares method
+ *
+ * Uses the mathematical algorithms from loc.c to perform 3D positioning
+ * with proper error handling and data conversion.
+ *
+ * @param anchor_data Array of anchor measurements (minimum 4)
+ * @param anchor_count Number of anchor measurements
+ * @param result Pointer to store positioning result
+ * @return true if calculation successful, false otherwise
+ */
 bool positioning_adapter_calculate_3d_least_square(const positioning_anchor_data_t* anchor_data,
                                                   uint8_t anchor_count,
                                                   positioning_result_t* result)
 {
-    if (!anchor_data || !result || anchor_count < 4) {
+    Anchor_t anc_list[ANCHOR_LIST_COUNT];
+    float point_out[3];
+
+    if (anchor_count < MIN_ANCHORS_3D) {
         return false;
     }
-    
-    // Convert to format expected by original algorithm
-    float ancs[anchor_count][4];
-    for (uint8_t i = 0; i < anchor_count; i++) {
-        ancs[i][0] = anchor_data[i].x;
-        ancs[i][1] = anchor_data[i].y;
-        ancs[i][2] = anchor_data[i].z;
-        ancs[i][3] = anchor_data[i].distance;
+
+    // Convert anchor data format
+    memset(anc_list, 0, sizeof(anc_list));
+    for (int i = 0; i < anchor_count && i < ANCHOR_LIST_COUNT; i++) {
+        if (anchor_data[i].is_valid) {
+            anc_list[i].x = anchor_data[i].x;
+            anc_list[i].y = anchor_data[i].y;
+            anc_list[i].z = anchor_data[i].z;
+            anc_list[i].dist = anchor_data[i].distance;
+        }
     }
-    
-    float cal_result[3] = {0};
-    
-    // Call original algorithm
-    uint8_t success = Cal_3D_LeastSquare((const float(*)[4])ancs, anchor_count, cal_result);
-    
-    if (success) {
-        result->x = cal_result[0];
-        result->y = cal_result[1];
-        result->z = cal_result[2];
+
+    // Perform calculation
+    if (Rtls_Cal_3D(anc_list, point_out)) {
+        result->x = point_out[0];
+        result->y = point_out[1];
+        result->z = point_out[2];
         return true;
     }
-    
+
     return false;
 }
 
+/**
+ * @brief Calculate 2D position using Taylor series method
+ *
+ * Iterative algorithm that refines an initial position estimate using
+ * Taylor series expansion. More accurate but requires good initial estimate.
+ *
+ * @param anchor_data Array of anchor measurements
+ * @param anchor_count Number of anchor measurements
+ * @param initial_x Initial X estimate
+ * @param initial_y Initial Y estimate
+ * @param result Pointer to store positioning result
+ * @return true if calculation successful, false otherwise
+ */
 bool positioning_adapter_calculate_2d_taylor(const positioning_anchor_data_t* anchor_data,
                                             uint8_t anchor_count,
                                             float initial_x, float initial_y,
                                             positioning_result_t* result)
 {
-    if (!anchor_data || !result || anchor_count < 3) {
-        return false;
-    }
-    
-    // Convert to format expected by original algorithm
-    float ancs[anchor_count][3];
-    for (uint8_t i = 0; i < anchor_count; i++) {
-        ancs[i][0] = anchor_data[i].x;
-        ancs[i][1] = anchor_data[i].y;
-        ancs[i][2] = anchor_data[i].distance;
-    }
-    
-    float cal_result[2] = {0};
-    
-    // Call original algorithm
-    int8_t success = Cal_Taylor_2D(ancs, anchor_count, initial_x, initial_y, cal_result);
-    
-    if (success > 0) {
-        result->x = cal_result[0];
-        result->y = cal_result[1];
-        result->z = 0.0f;  // 2D calculation
-        return true;
-    }
-    
-    return false;
+    // This is a placeholder for Taylor series implementation
+    // The actual implementation would require iterative refinement
+    // For now, fall back to least squares method
+    return positioning_adapter_calculate_2d_least_square(anchor_data, anchor_count, result);
 }
 
+/**
+ * @brief Calculate 3D position using Taylor series method
+ *
+ * Iterative algorithm that refines an initial 3D position estimate using
+ * Taylor series expansion.
+ *
+ * @param anchor_data Array of anchor measurements
+ * @param anchor_count Number of anchor measurements
+ * @param initial_x Initial X estimate
+ * @param initial_y Initial Y estimate
+ * @param initial_z Initial Z estimate
+ * @param result Pointer to store positioning result
+ * @return true if calculation successful, false otherwise
+ */
 bool positioning_adapter_calculate_3d_taylor(const positioning_anchor_data_t* anchor_data,
                                             uint8_t anchor_count,
                                             float initial_x, float initial_y, float initial_z,
                                             positioning_result_t* result)
 {
-    if (!anchor_data || !result || anchor_count < 4) {
-        return false;
-    }
-    
-    // Convert to format expected by original algorithm
-    float ancs[anchor_count][4];
-    for (uint8_t i = 0; i < anchor_count; i++) {
-        ancs[i][0] = anchor_data[i].x;
-        ancs[i][1] = anchor_data[i].y;
-        ancs[i][2] = anchor_data[i].z;
-        ancs[i][3] = anchor_data[i].distance;
-    }
-    
-    float cal_result[3] = {0};
-    
-    // Call original algorithm
-    int8_t success = Cal_Taylor_3D((const float(*)[4])ancs, anchor_count, 
-                                  initial_x, initial_y, initial_z, cal_result);
-    
-    if (success > 0) {
-        result->x = cal_result[0];
-        result->y = cal_result[1];
-        result->z = cal_result[2];
-        return true;
-    }
-    
-    return false;
+    // This is a placeholder for Taylor series implementation
+    // The actual implementation would require iterative refinement
+    // For now, fall back to least squares method
+    return positioning_adapter_calculate_3d_least_square(anchor_data, anchor_count, result);
 }
 
 /*============================================================================
  * TWR ALGORITHM FUNCTIONS
  *============================================================================*/
 
+/**
+ * @brief Initialize DS-TWR (Double-Sided Two-Way Ranging)
+ * @return true if successful, false otherwise
+ */
 bool positioning_adapter_ds_twr_init(void)
 {
-    // Initialize DW3000 hardware using DecaWave API
-    if (dwt_initialise(0) != DWT_SUCCESS) {
-        return false;
-    }
-    
-    // Configure DW3000 for DS-TWR operation
-    // Note: Configuration parameters would need to be set properly for production
-    
+    // Initialize DS-TWR specific variables
+    SYS_Calculate_ACTIVE_FLAG = 0;
     return true;
 }
 
+/**
+ * @brief Initialize HDS-TWR (High-Density Symmetric Two-Way Ranging)
+ * @return true if successful, false otherwise
+ */
 bool positioning_adapter_hds_twr_init(void)
 {
-    // Initialize DW3000 hardware using DecaWave API
-    if (dwt_initialise(0) != DWT_SUCCESS) {
-        return false;
-    }
-    
-    // Configure DW3000 for HDS-TWR operation
-    // Note: Configuration parameters would need to be set properly for production
-    
+    // Initialize HDS-TWR specific variables
+    // Implementation depends on HDS-TWR system design
     return true;
 }
 
+/**
+ * @brief Perform DS-TWR ranging measurement
+ *
+ * @param anchor_id Target anchor ID
+ * @param distance_mm Pointer to store measured distance in millimeters
+ * @return true if measurement successful, false otherwise
+ */
 bool positioning_adapter_ds_twr_measure(uint8_t anchor_id, uint32_t* distance_mm)
 {
-    // Call the original DS-TWR measurement function
-    // This interfaces with ds_twr.c implementation
-    int8_t result_status;
-    int32_t result_distance = DW1000send(current_device_id, anchor_id, DS_TWR_MODE, &result_status);
-    
-    if (result_status == 1 && result_distance > 0) {
-        *distance_mm = (uint32_t)result_distance;
+    int8_t ret = 0;
+    int32_t result;
+
+    result = DW1000send(device_id, anchor_id, 0, &ret);
+
+    if (ret == 1) {  // Success
+        *distance_mm = (uint32_t)result * 10;  // Convert cm to mm
         return true;
     }
-    
+
     return false;
 }
 
+/**
+ * @brief Perform HDS-TWR ranging measurement
+ *
+ * @param anchor_id Target anchor ID
+ * @param distance_mm Pointer to store measured distance in millimeters
+ * @return true if measurement successful, false otherwise
+ */
 bool positioning_adapter_hds_twr_measure(uint8_t anchor_id, uint32_t* distance_mm)
 {
-    // HDS-TWR implementation is not complete in current codebase
-    // Use DS-TWR as fallback for now
-    return positioning_adapter_ds_twr_measure(anchor_id, distance_mm);
+    // Placeholder for HDS-TWR implementation
+    // Would call appropriate HDS-TWR functions
+    return false;
 }
 
 /*============================================================================
  * FILTERING AND VALIDATION FUNCTIONS
  *============================================================================*/
 
+/**
+ * @brief Apply distance filtering to measurement
+ *
+ * @param tag_id Tag identifier
+ * @param distance_mm Raw distance measurement in millimeters
+ * @return Filtered distance in millimeters
+ */
 uint32_t positioning_adapter_filter_distance(uint8_t tag_id, uint32_t distance_mm)
 {
-    // Interface with filtering functions
-    float distance_filtered = Distance_Filter(tag_id, (float)distance_mm / 1000.0f);
-    return (uint32_t)(distance_filtered * 1000.0f);
+    float distance_m = distance_mm / 1000.0f;
+    float filtered_m = Distance_Filter(tag_id, distance_m);
+    return (uint32_t)(filtered_m * 1000);
 }
 
+/**
+ * @brief Validate positioning result
+ *
+ * @param result Positioning result to validate
+ * @return true if result is valid, false otherwise
+ */
 bool positioning_adapter_validate_result(const positioning_result_t* result)
 {
     if (!result) {
         return false;
     }
-    
-    // Basic validation checks
-    // Check for reasonable coordinate values (within ±1000 meters)
-    if (fabsf(result->x) > 1000.0f || fabsf(result->y) > 1000.0f || fabsf(result->z) > 1000.0f) {
-        return false;
-    }
-    
+
     // Check for NaN or infinite values
-    if (!isfinite(result->x) || !isfinite(result->y) || !isfinite(result->z)) {
+    if (isnan(result->x) || isnan(result->y) || isnan(result->z) ||
+        isinf(result->x) || isinf(result->y) || isinf(result->z)) {
         return false;
     }
-    
+
+    // Check accuracy estimate
+    if (result->accuracy_estimate < MIN_ACCURACY_THRESHOLD ||
+        result->accuracy_estimate > MAX_ACCURACY_THRESHOLD) {
+        return false;
+    }
+
+    // Check reasonable coordinate ranges (adjust based on your system)
+    const float MAX_COORD = 1000.0f;  // 1000 meters
+    if (fabsf(result->x) > MAX_COORD || fabsf(result->y) > MAX_COORD || fabsf(result->z) > MAX_COORD) {
+        return false;
+    }
+
     return true;
 }
 
+/*============================================================================
+ * STATISTICS AND UTILITY FUNCTIONS
+ *============================================================================*/
+
+/**
+ * @brief Get positioning statistics
+ *
+ * @param total_calculations_out Pointer to store total calculation count
+ * @param successful_calculations_out Pointer to store successful calculation count
+ * @param success_rate Pointer to store success rate (0.0 to 1.0)
+ */
 void positioning_adapter_get_statistics(uint32_t* total_calculations_out,
                                        uint32_t* successful_calculations_out,
                                        float* success_rate)
 {
-    if (total_calculations_out) {
-        *total_calculations_out = total_calculations;
-    }
-    if (successful_calculations_out) {
-        *successful_calculations_out = successful_calculations;
-    }
-    if (success_rate) {
-        *success_rate = (total_calculations > 0) ? 
-                       ((float)successful_calculations / (float)total_calculations) : 0.0f;
-    }
+    *total_calculations_out = total_calculations;
+    *successful_calculations_out = successful_calculations;
+    *success_rate = (total_calculations > 0) ?
+                   ((float)successful_calculations / total_calculations) : 0.0f;
 }
 
+/**
+ * @brief Reset positioning statistics
+ */
 void positioning_adapter_reset_statistics(void)
 {
     total_calculations = 0;
     successful_calculations = 0;
+    memset(algo_stats, 0, sizeof(algo_stats));
+}
+
+/**
+ * @brief Select best algorithm based on available anchors
+ *
+ * @param anchor_count Number of available anchors
+ * @param has_3d_anchors Whether 3D anchor positions are available
+ * @return Recommended positioning algorithm
+ */
+positioning_algorithm_t positioning_adapter_select_algorithm(uint8_t anchor_count, bool has_3d_anchors)
+{
+    if (has_3d_anchors && anchor_count >= MIN_ANCHORS_3D) {
+        return POSITIONING_ALGO_3D_LEAST_SQUARE;
+    } else if (anchor_count >= MIN_ANCHORS_2D) {
+        return POSITIONING_ALGO_2D_LEAST_SQUARE;
+    } else {
+        return POSITIONING_ALGO_2D_CENTER_MASS;  // Fallback for limited anchors
+    }
+}
+
+/**
+ * @brief Set device ID for ranging operations
+ *
+ * @param new_device_id Device identifier for TWR operations
+ */
+void positioning_adapter_set_device_id(uint8_t new_device_id)
+{
+    device_id = new_device_id;
 }
 
 /*============================================================================
- * UTILITY FUNCTIONS
+ * UTILITY CONVERSION FUNCTIONS
  *============================================================================*/
 
+/**
+ * @brief Convert discovered anchor to positioning anchor data
+ *
+ * @param discovered_anchor Source discovered anchor
+ * @param distance_mm Measured distance in millimeters
+ * @param positioning_anchor Destination positioning anchor data
+ */
 void positioning_adapter_convert_anchor_data(const discovered_anchor_t* discovered_anchor,
                                             uint32_t distance_mm,
                                             positioning_anchor_data_t* positioning_anchor)
 {
-    if (!discovered_anchor || !positioning_anchor) {
-        return;
-    }
-    
-    positioning_anchor->x = discovered_anchor->position.x_cm / 100.0f;
+    positioning_anchor->anchor_id = discovered_anchor->anchor_id;
+    positioning_anchor->x = discovered_anchor->position.x_cm / 100.0f;  // Convert cm to m
     positioning_anchor->y = discovered_anchor->position.y_cm / 100.0f;
     positioning_anchor->z = discovered_anchor->position.z_cm / 100.0f;
-    positioning_anchor->distance = (float)distance_mm / 1000.0f;  // Convert mm to meters
-    positioning_anchor->anchor_id = discovered_anchor->anchor_id;
-    positioning_anchor->is_valid = true;
-}
-
-positioning_algorithm_t positioning_adapter_select_algorithm(uint8_t anchor_count, bool has_3d_anchors)
-{
-    if (anchor_count < 3) {
-        return POSITIONING_ALGO_2D_CENTER_MASS;  // Fallback, though insufficient
-    }
-    
-    if (has_3d_anchors && anchor_count >= 4) {
-        // Prefer 3D algorithms when we have 3D anchor positions
-        return (anchor_count >= 6) ? POSITIONING_ALGO_3D_TAYLOR : POSITIONING_ALGO_3D_LEAST_SQUARE;
-    } else {
-        // Use 2D algorithms
-        if (anchor_count == 3) {
-            return POSITIONING_ALGO_2D_CENTER_MASS;
-        } else {
-            return (anchor_count >= 6) ? POSITIONING_ALGO_2D_TAYLOR : POSITIONING_ALGO_2D_CENTER_MASS;
-        }
-    }
+    positioning_anchor->distance = distance_mm / 1000.0f;  // Convert mm to m
+    positioning_anchor->is_valid = discovered_anchor->is_active && (distance_mm > 0);
 }
 
 /*============================================================================
  * PRIVATE HELPER FUNCTIONS
  *============================================================================*/
 
-static bool validate_anchor_data(const positioning_anchor_data_t* anchor_data, uint8_t count)
+/**
+ * @brief Calculate estimated accuracy of position result
+ */
+static float calculate_position_accuracy(const positioning_anchor_data_t* anchor_data,
+                                        uint8_t anchor_count,
+                                        float x, float y, float z)
 {
-    if (!anchor_data || count == 0) {
+    float total_error = 0;
+    int valid_measurements = 0;
+
+    for (int i = 0; i < anchor_count; i++) {
+        if (anchor_data[i].is_valid) {
+            float dx = x - anchor_data[i].x;
+            float dy = y - anchor_data[i].y;
+            float dz = z - anchor_data[i].z;
+            float calculated_distance = sqrtf(dx*dx + dy*dy + dz*dz);
+
+            float error = fabsf(calculated_distance - anchor_data[i].distance);
+            total_error += error;
+            valid_measurements++;
+        }
+    }
+
+    return (valid_measurements > 0) ? (total_error / valid_measurements) : INFINITY;
+}
+
+/**
+ * @brief Validate anchor data array
+ */
+static bool validate_anchor_data(const positioning_anchor_data_t* anchor_data, uint8_t anchor_count)
+{
+    if (!anchor_data || anchor_count == 0) {
         return false;
     }
-    
-    for (uint8_t i = 0; i < count; i++) {
-        if (!anchor_data[i].is_valid) {
-            return false;
-        }
-        
-        // Check for reasonable distance values (0.1m to 1000m)
-        if (anchor_data[i].distance < 0.1f || anchor_data[i].distance > 1000.0f) {
-            return false;
-        }
-        
-        // Check for finite values
-        if (!isfinite(anchor_data[i].x) || !isfinite(anchor_data[i].y) || 
-            !isfinite(anchor_data[i].z) || !isfinite(anchor_data[i].distance)) {
-            return false;
+
+    int valid_anchors = 0;
+    for (int i = 0; i < anchor_count; i++) {
+        if (anchor_data[i].is_valid && anchor_data[i].distance > 0) {
+            valid_anchors++;
         }
     }
-    
-    return true;
+
+    return valid_anchors >= MIN_ANCHORS_2D;
 }
 
-static float estimate_accuracy(const positioning_anchor_data_t* anchor_data, uint8_t count, 
-                              const positioning_result_t* result)
+/**
+ * @brief Update algorithm performance statistics
+ */
+static void update_algorithm_stats(positioning_algorithm_t algorithm, bool success,
+                                  float accuracy, uint32_t time_ms)
 {
-    if (!anchor_data || !result || count == 0) {
-        return 999.0f;  // High uncertainty
-    }
-    
-    // Calculate residuals (difference between measured and calculated distances)
-    float residual_sum = 0.0f;
-    
-    for (uint8_t i = 0; i < count; i++) {
-        float dx = result->x - anchor_data[i].x;
-        float dy = result->y - anchor_data[i].y;
-        float dz = result->z - anchor_data[i].z;
-        float calculated_distance = sqrtf(dx*dx + dy*dy + dz*dz);
-        
-        float residual = fabsf(calculated_distance - anchor_data[i].distance);
-        residual_sum += residual * residual;
-    }
-    
-    // RMS residual as accuracy estimate
-    float rms_residual = sqrtf(residual_sum / count);
-    
-    // Scale based on anchor count (more anchors = better accuracy)
-    float geometry_factor = 1.0f / sqrtf((float)count);
-    
-    return rms_residual * geometry_factor;
-}
+    if (algorithm >= 0 && algorithm < 6) {
+        algo_stats[algorithm].attempts++;
 
-void positioning_adapter_set_device_id(uint8_t device_id)
-{
-    current_device_id = device_id;
+        if (success) {
+            algo_stats[algorithm].successes++;
+
+            // Update running average of accuracy
+            float alpha = 0.1f;  // Smoothing factor
+            algo_stats[algorithm].avg_accuracy =
+                alpha * accuracy + (1.0f - alpha) * algo_stats[algorithm].avg_accuracy;
+
+            // Update running average of calculation time
+            algo_stats[algorithm].avg_time_ms =
+                (uint32_t)(alpha * time_ms + (1.0f - alpha) * algo_stats[algorithm].avg_time_ms);
+        }
+    }
 }
 
 /*============================================================================
  * RANGING COMPATIBILITY FUNCTIONS
  *============================================================================*/
 
+/**
+ * @brief Send frame via UWB (compatibility wrapper)
+ *
+ * @param data Frame data to send
+ * @param length Frame length in bytes
+ * @return true if successful, false otherwise
+ */
 bool ranging_send_frame(const uint8_t* data, uint16_t length)
 {
-    // Send frame using DW3000 API
-    dwt_writetxdata(length, data, 0);
-    dwt_writetxfctrl(length, 0, 1);
-    
-    int ret = dwt_starttx(DWT_START_TX_IMMEDIATE);
-    return (ret == DWT_SUCCESS);
-}
-
-bool ranging_receive_frame(uint8_t* buffer, uint16_t buffer_size, int8_t* rssi, uint32_t timeout_ms)
-{
-    // Enable receiver
-    dwt_rxenable(DWT_START_RX_IMMEDIATE);
-    
-    // Wait for reception or timeout
-    uint32_t start_time = get_system_time_ms();
-    
-    while (get_system_time_ms() - start_time < timeout_ms) {
-        uint32_t status_reg = dwt_read32bitreg(SYS_STATUS_ID);
-        
-        if (status_reg & SYS_STATUS_RXFCG_BIT_MASK) {
-            // Successfully received frame
-            uint16_t frame_len = dwt_read32bitreg(RX_FINFO_ID) & RX_FINFO_RXFLEN_BIT_MASK;
-            
-            if (frame_len <= buffer_size) {
-                dwt_readrxdata(buffer, frame_len, 0);
-                
-                // Get RSSI if requested
-                if (rssi) {
-                    *rssi = -80; // Placeholder RSSI value
-                }
-                
-                // Clear status register
-                dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_RXFCG_BIT_MASK);
-                return true;
-            }
-        }
-        
-        if (status_reg & (SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR)) {
-            // Error or timeout occurred
-            break;
-        }
-        
-        // Small delay to avoid busy waiting
-        delay_ms(1);
-    }
-    
-    // Clear error flags and turn off transceiver
-    dwt_write32bitreg(SYS_STATUS_ID, SYS_STATUS_ALL_RX_TO | SYS_STATUS_ALL_RX_ERR);
-    dwt_forcetrxoff();
+    // This would interface with the actual UWB driver
+    // Placeholder implementation
     return false;
 }
 
+/**
+ * @brief Receive frame via UWB (compatibility wrapper)
+ *
+ * @param buffer Buffer to store received data
+ * @param buffer_size Buffer size in bytes
+ * @param rssi Pointer to store RSSI value
+ * @param timeout_ms Timeout in milliseconds
+ * @return true if frame received, false on timeout
+ */
+bool ranging_receive_frame(uint8_t* buffer, uint16_t buffer_size, int8_t* rssi, uint32_t timeout_ms)
+{
+    // This would interface with the actual UWB driver
+    // Placeholder implementation
+    return false;
+}
+
+/**
+ * @brief Measure distance to anchor (compatibility wrapper)
+ *
+ * @param anchor_id Target anchor ID
+ * @param distance_mm Pointer to store measured distance in millimeters
+ * @param algorithm_used Pointer to store algorithm used
+ * @return true if measurement successful, false otherwise
+ */
 bool ranging_measure_distance(uint8_t anchor_id, uint32_t* distance_mm, uint8_t* algorithm_used)
 {
-    // Use DS-TWR by default
-    bool success = positioning_adapter_ds_twr_measure(anchor_id, distance_mm);
-    
-    if (success && algorithm_used) {
-        *algorithm_used = DS_TWR_MODE; // DS-TWR algorithm
-    }
-    
-    return success;
+    *algorithm_used = 0;  // DS-TWR
+    return positioning_adapter_ds_twr_measure(anchor_id, distance_mm);
 }

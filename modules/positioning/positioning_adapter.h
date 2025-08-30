@@ -1,10 +1,10 @@
 /**
  * @file    positioning_adapter.h
  * @brief   Adapter layer for integrating original TWR positioning algorithms
- * 
+ *
  * This file provides a bridge between the original positioning algorithms
  * and the new UWB project architecture.
- * 
+ *
  * @author  UWB PG3.9 project
  * @date    2024
  */

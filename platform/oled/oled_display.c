@@ -1,9 +1,9 @@
 /**
  * @file    oled_display.c
  * @brief   SSD1306 OLED Display Driver Implementation
- * 
+ *
  * This file implements the OLED display functions for UWB system status display.
- * 
+ *
  * @author  Refactored for UWB PG3.9 project
  * @date    2024
  */
@@ -86,12 +86,12 @@ void oled_i2c_stop(void)
 bool oled_i2c_wait_ack(void)
 {
     uint8_t timeout = 0;
-    
+
     OLED_SDA_HIGH();
     Delay_us(1);
     OLED_SCL_HIGH();
     Delay_us(1);
-    
+
     while (OLED_SDA_READ()) {
         timeout++;
         if (timeout > 250) {
@@ -99,7 +99,7 @@ bool oled_i2c_wait_ack(void)
             return false;
         }
     }
-    
+
     OLED_SCL_LOW();
     return true;
 }
@@ -156,7 +156,7 @@ void oled_i2c_send_byte(uint8_t data)
 uint8_t oled_i2c_read_byte(void)
 {
     uint8_t data = 0;
-    
+
     OLED_SDA_HIGH();
     for (uint8_t i = 0; i < 8; i++) {
         data <<= 1;
@@ -169,7 +169,7 @@ uint8_t oled_i2c_read_byte(void)
         Delay_us(1);
     }
     OLED_SCL_LOW();
-    
+
     return data;
 }
 
@@ -183,18 +183,18 @@ uint8_t oled_i2c_read_byte(void)
 static void oled_gpio_init(void)
 {
     GPIO_InitTypeDef GPIO_InitStructure;
-    
+
     /* Configure I2C pins (SCL, SDA) as open-drain outputs */
     GPIO_InitStructure.GPIO_Pin = OLED_SCL_PIN | OLED_SDA_PIN;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_OD;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(OLED_SCL_PORT, &GPIO_InitStructure);
-    
+
     /* Configure reset pin as push-pull output */
     GPIO_InitStructure.GPIO_Pin = OLED_RST_PIN;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP;
     GPIO_Init(OLED_RST_PORT, &GPIO_InitStructure);
-    
+
     /* Initialize pins to high state */
     OLED_SCL_HIGH();
     OLED_SDA_HIGH();
@@ -241,12 +241,12 @@ void oled_write_data_buffer(const uint8_t* buffer, uint16_t length)
     oled_i2c_wait_ack();
     oled_i2c_send_byte(0x40); /* Data mode */
     oled_i2c_wait_ack();
-    
+
     for (uint16_t i = 0; i < length; i++) {
         oled_i2c_send_byte(buffer[i]);
         oled_i2c_wait_ack();
     }
-    
+
     oled_i2c_stop();
 }
 
@@ -270,10 +270,10 @@ bool oled_init(void)
 {
     /* Initialize GPIO */
     oled_gpio_init();
-    
+
     /* Reset display */
     oled_reset();
-    
+
     /* Initialize display */
     oled_write_command(SSD1306_DISPLAYOFF);
     oled_write_command(SSD1306_SETDISPLAYCLOCKDIV);
@@ -300,16 +300,16 @@ bool oled_init(void)
     oled_write_command(SSD1306_DISPLAYALLON_RESUME);
     oled_write_command(SSD1306_NORMALDISPLAY);
     oled_write_command(SSD1306_DISPLAYON);
-    
+
     /* Clear display */
     oled_clear_screen();
-    
+
     /* Update status */
     oled_status.initialized = true;
     oled_status.display_on = true;
     oled_status.contrast = 0xCF;
     oled_status.inverse_mode = false;
-    
+
     return true;
 }
 
@@ -390,25 +390,25 @@ void oled_draw_char(uint8_t x, uint8_t y, char ch, uint8_t font_size, bool inver
     uint8_t char_index = ch - ' ';
     uint8_t font_width = (font_size == OLED_FONT_LARGE) ? 16 : 8;
     uint8_t font_height = (font_size == OLED_FONT_LARGE) ? 16 : 8;
-    
+
     if (char_index >= 95) return; /* Beyond printable ASCII range */
-    
+
     for (uint8_t i = 0; i < font_width; i++) {
         uint8_t font_data;
-        
+
         if (font_size == OLED_FONT_LARGE) {
             font_data = F16x16[char_index][i];
         } else {
             font_data = F8X16[char_index][i];
         }
-        
+
         if (inverse) {
             font_data = ~font_data;
         }
-        
+
         oled_set_position(x + i, y);
         oled_write_data(font_data);
-        
+
         if (font_height == 16) {
             uint8_t font_data2;
             if (font_size == OLED_FONT_LARGE) {
@@ -416,11 +416,11 @@ void oled_draw_char(uint8_t x, uint8_t y, char ch, uint8_t font_size, bool inver
             } else {
                 font_data2 = F8X16[char_index][i + font_width];
             }
-            
+
             if (inverse) {
                 font_data2 = ~font_data2;
             }
-            
+
             oled_set_position(x + i, y + 1);
             oled_write_data(font_data2);
         }
@@ -434,12 +434,12 @@ void oled_draw_string(uint8_t x, uint8_t y, const char* str, uint8_t font_size, 
 {
     uint8_t char_width = (font_size == OLED_FONT_LARGE) ? 16 : 8;
     uint8_t pos_x = x;
-    
+
     while (*str) {
         if (pos_x + char_width > OLED_WIDTH) {
             break; /* Exceed display width */
         }
-        
+
         oled_draw_char(pos_x, y, *str, font_size, inverse);
         pos_x += char_width;
         str++;
@@ -476,24 +476,24 @@ void oled_draw_float(uint8_t x, uint8_t y, float number, uint8_t decimals, uint8
 void oled_display_main_screen(const uwb_display_data_t* data)
 {
     char str[32];
-    
+
     oled_clear_screen();
-    
+
     /* Title */
     oled_draw_string(0, 0, "UWB PG3.9", OLED_FONT_MEDIUM, false);
-    
+
     /* Device mode and ID */
     sprintf(str, "%s ID:%d", (data->device_mode == 0) ? "Tag" : "Anchor", data->device_id);
     oled_draw_string(0, 2, str, OLED_FONT_SMALL, false);
-    
+
     /* Signal strength */
     sprintf(str, "RSSI:%ddBm", data->signal_strength);
     oled_draw_string(0, 3, str, OLED_FONT_SMALL, false);
-    
+
     /* Measurements */
     sprintf(str, "Dist:%.2fm", data->last_distance);
     oled_draw_string(0, 4, str, OLED_FONT_SMALL, false);
-    
+
     /* Network status */
     if (data->device_mode == 0) { /* Tag */
         sprintf(str, "Anchors:%d", data->anchor_count);
@@ -501,11 +501,11 @@ void oled_display_main_screen(const uwb_display_data_t* data)
         sprintf(str, "Tags:%d", data->tag_count);
     }
     oled_draw_string(0, 5, str, OLED_FONT_SMALL, false);
-    
+
     /* Status indicators */
     sprintf(str, "F:%s U:%s", data->flash_ok ? "OK" : "ER", data->uart_ok ? "OK" : "ER");
     oled_draw_string(0, 6, str, OLED_FONT_SMALL, false);
-    
+
     /* Measurement count */
     sprintf(str, "Cnt:%lu Err:%lu", data->measurement_count, data->error_count);
     oled_draw_string(0, 7, str, OLED_FONT_SMALL, false);
@@ -517,31 +517,31 @@ void oled_display_main_screen(const uwb_display_data_t* data)
 void oled_display_config_screen(const uwb_display_data_t* data)
 {
     char str[32];
-    
+
     oled_clear_screen();
-    
+
     /* Title */
     oled_draw_string(0, 0, "Configuration", OLED_FONT_MEDIUM, false);
-    
+
     /* Device information */
     sprintf(str, "Mode: %s", (data->device_mode == 0) ? "Tag" : "Anchor");
     oled_draw_string(0, 2, str, OLED_FONT_SMALL, false);
-    
+
     sprintf(str, "ID: %d", data->device_id);
     oled_draw_string(0, 3, str, OLED_FONT_SMALL, false);
-    
+
     if (data->device_mode == 1) { /* Anchor */
         sprintf(str, "Pos: %.1f,%.1f,%.1f", data->position_x, data->position_y, data->position_z);
         oled_draw_string(0, 4, str, OLED_FONT_SMALL, false);
     }
-    
+
     /* System status */
     sprintf(str, "UWB: %s", data->uwb_initialized ? "Ready" : "Init");
     oled_draw_string(0, 5, str, OLED_FONT_SMALL, false);
-    
+
     sprintf(str, "Flash: %s", data->flash_ok ? "OK" : "Error");
     oled_draw_string(0, 6, str, OLED_FONT_SMALL, false);
-    
+
     sprintf(str, "UART: %s", data->uart_ok ? "OK" : "Error");
     oled_draw_string(0, 7, str, OLED_FONT_SMALL, false);
 }
@@ -552,13 +552,13 @@ void oled_display_config_screen(const uwb_display_data_t* data)
 void oled_display_error_screen(const char* error_msg)
 {
     oled_clear_screen();
-    
+
     /* Error title */
     oled_draw_string(0, 0, "ERROR", OLED_FONT_MEDIUM, true);
-    
+
     /* Error message */
     oled_draw_string(0, 3, error_msg, OLED_FONT_SMALL, false);
-    
+
     /* Instructions */
     oled_draw_string(0, 6, "Press RESET to", OLED_FONT_SMALL, false);
     oled_draw_string(0, 7, "restart system", OLED_FONT_SMALL, false);
@@ -581,20 +581,20 @@ bool oled_self_test(void)
     if (!oled_status.initialized) {
         return false;
     }
-    
+
     /* Test pattern display */
     oled_test_pattern();
     Delay_ms(1000);
-    
+
     oled_clear_screen();
     oled_draw_string(0, 0, "Self Test", OLED_FONT_MEDIUM, false);
     oled_draw_string(0, 2, "Display: OK", OLED_FONT_SMALL, false);
     oled_draw_string(0, 3, "I2C: OK", OLED_FONT_SMALL, false);
     oled_draw_string(0, 4, "Font: OK", OLED_FONT_SMALL, false);
-    
+
     Delay_ms(2000);
     oled_clear_screen();
-    
+
     return true;
 }
 
@@ -604,7 +604,7 @@ bool oled_self_test(void)
 void oled_test_pattern(void)
 {
     oled_clear_screen();
-    
+
     /* Draw border */
     for (uint8_t i = 0; i < OLED_WIDTH; i++) {
         oled_set_position(i, 0);
@@ -612,14 +612,14 @@ void oled_test_pattern(void)
         oled_set_position(i, 7);
         oled_write_data(0xFF);
     }
-    
+
     for (uint8_t i = 1; i < 7; i++) {
         oled_set_position(0, i);
         oled_write_data(0xFF);
         oled_set_position(127, i);
         oled_write_data(0xFF);
     }
-    
+
     /* Draw center text */
     oled_draw_string(32, 3, "UWB PG3.9", OLED_FONT_MEDIUM, false);
     oled_draw_string(40, 5, "TEST", OLED_FONT_SMALL, false);

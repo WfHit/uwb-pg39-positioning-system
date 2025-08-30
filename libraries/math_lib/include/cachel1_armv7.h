@@ -48,7 +48,7 @@
 
 #ifndef __SCB_ICACHE_LINE_SIZE
 #define __SCB_ICACHE_LINE_SIZE  32U /*!< Cortex-M7 cache line size is fixed to 32 bytes (8 words). See also register SCB_CCSIDR */
-#endif 
+#endif
 
 /**
   \brief   Enable I-Cache
@@ -70,7 +70,6 @@ __STATIC_FORCEINLINE void SCB_EnableICache (void)
   #endif
 }
 
-
 /**
   \brief   Disable I-Cache
   \details Turns off I-Cache
@@ -87,7 +86,6 @@ __STATIC_FORCEINLINE void SCB_DisableICache (void)
   #endif
 }
 
-
 /**
   \brief   Invalidate I-Cache
   \details Invalidates I-Cache
@@ -102,7 +100,6 @@ __STATIC_FORCEINLINE void SCB_InvalidateICache (void)
     __ISB();
   #endif
 }
-
 
 /**
   \brief   I-Cache Invalidate by address
@@ -132,7 +129,6 @@ __STATIC_FORCEINLINE void SCB_InvalidateICache_by_Addr (void *addr, int32_t isiz
     }
   #endif
 }
-
 
 /**
   \brief   Enable D-Cache
@@ -173,7 +169,6 @@ __STATIC_FORCEINLINE void SCB_EnableDCache (void)
   #endif
 }
 
-
 /**
   \brief   Disable D-Cache
   \details Turns off D-Cache
@@ -211,7 +206,6 @@ __STATIC_FORCEINLINE void SCB_DisableDCache (void)
   #endif
 }
 
-
 /**
   \brief   Invalidate D-Cache
   \details Invalidates D-Cache
@@ -245,7 +239,6 @@ __STATIC_FORCEINLINE void SCB_InvalidateDCache (void)
     __ISB();
   #endif
 }
-
 
 /**
   \brief   Clean D-Cache
@@ -281,7 +274,6 @@ __STATIC_FORCEINLINE void SCB_CleanDCache (void)
   #endif
 }
 
-
 /**
   \brief   Clean & Invalidate D-Cache
   \details Cleans and Invalidates D-Cache
@@ -316,7 +308,6 @@ __STATIC_FORCEINLINE void SCB_CleanInvalidateDCache (void)
   #endif
 }
 
-
 /**
   \brief   D-Cache Invalidate by address
   \details Invalidates D-Cache for the given address.
@@ -328,10 +319,10 @@ __STATIC_FORCEINLINE void SCB_CleanInvalidateDCache (void)
 __STATIC_FORCEINLINE void SCB_InvalidateDCache_by_Addr (void *addr, int32_t dsize)
 {
   #if defined (__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
-    if ( dsize > 0 ) { 
+    if ( dsize > 0 ) {
        int32_t op_size = dsize + (((uint32_t)addr) & (__SCB_DCACHE_LINE_SIZE - 1U));
       uint32_t op_addr = (uint32_t)addr /* & ~(__SCB_DCACHE_LINE_SIZE - 1U) */;
-    
+
       __DSB();
 
       do {
@@ -346,7 +337,6 @@ __STATIC_FORCEINLINE void SCB_InvalidateDCache_by_Addr (void *addr, int32_t dsiz
   #endif
 }
 
-
 /**
   \brief   D-Cache Clean by address
   \details Cleans D-Cache for the given address
@@ -358,10 +348,10 @@ __STATIC_FORCEINLINE void SCB_InvalidateDCache_by_Addr (void *addr, int32_t dsiz
 __STATIC_FORCEINLINE void SCB_CleanDCache_by_Addr (uint32_t *addr, int32_t dsize)
 {
   #if defined (__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
-    if ( dsize > 0 ) { 
+    if ( dsize > 0 ) {
        int32_t op_size = dsize + (((uint32_t)addr) & (__SCB_DCACHE_LINE_SIZE - 1U));
       uint32_t op_addr = (uint32_t)addr /* & ~(__SCB_DCACHE_LINE_SIZE - 1U) */;
-    
+
       __DSB();
 
       do {
@@ -376,7 +366,6 @@ __STATIC_FORCEINLINE void SCB_CleanDCache_by_Addr (uint32_t *addr, int32_t dsize
   #endif
 }
 
-
 /**
   \brief   D-Cache Clean and Invalidate by address
   \details Cleans and invalidates D_Cache for the given address
@@ -388,10 +377,10 @@ __STATIC_FORCEINLINE void SCB_CleanDCache_by_Addr (uint32_t *addr, int32_t dsize
 __STATIC_FORCEINLINE void SCB_CleanInvalidateDCache_by_Addr (uint32_t *addr, int32_t dsize)
 {
   #if defined (__DCACHE_PRESENT) && (__DCACHE_PRESENT == 1U)
-    if ( dsize > 0 ) { 
+    if ( dsize > 0 ) {
        int32_t op_size = dsize + (((uint32_t)addr) & (__SCB_DCACHE_LINE_SIZE - 1U));
       uint32_t op_addr = (uint32_t)addr /* & ~(__SCB_DCACHE_LINE_SIZE - 1U) */;
-    
+
       __DSB();
 
       do {

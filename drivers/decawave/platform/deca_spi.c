@@ -17,8 +17,6 @@
 #include <stm32f10x.h>
 #include "spi.h"
 
-
-
 /****************************************************************************//**
  *
  *                              DW1000 SPI section
@@ -45,9 +43,6 @@ int closespi(void)
 {
     return 0;
 } // end closespi()
-
-
-
 
 /*! ------------------------------------------------------------------------------------------------------------------
  * Function: writetospiwithcrc()
@@ -95,14 +90,13 @@ int writetospiwithcrc(
 
 		  SPI_DW1000->DR ;
 	  }
-		
+
     SPI_DW1000_CS_GPIO->BSRR = SPI_DW1000_CS;
     decamutexoff(stat) ;
 
     return 0;
-	
-} // end writetospiwithcrc()
 
+} // end writetospiwithcrc()
 
 /*! ------------------------------------------------------------------------------------------------------------------
  * Function: writetospi()
@@ -143,7 +137,6 @@ int writetospi(uint16_t headerLength, const uint8_t *headerBuffer, uint16_t body
 
     return 0;
 } // end writetospi()
-
 
 /*! ------------------------------------------------------------------------------------------------------------------
 * @fn spi_cs_low_delay()
@@ -203,7 +196,7 @@ int readfromspi(uint16_t  headerLength,
 		 while((SPI_DW1000->SR & SPI_I2S_FLAG_RXNE) == (uint16_t)RESET);
 		 readBuffer[i] = SPI_DW1000->DR ;//port_SPI_DW1000_receive_data(); //this clears RXNE bit
 	 }
-	
+
 	 SPI_DW1000_CS_GPIO->BSRR = SPI_DW1000_CS;
    decamutexoff(stat) ;
 	 return 0;

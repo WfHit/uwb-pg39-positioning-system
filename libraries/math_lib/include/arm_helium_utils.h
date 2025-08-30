@@ -38,7 +38,6 @@ Definitions available for MVEF and MVEI
 
 #define INACTIVELANE            0 /* inactive lane content */
 
-
 #endif /* defined (ARM_MATH_HELIUM) || defined(ARM_MATH_MVEF) || defined(ARM_MATH_MVEI) */
 
 /***************************************
@@ -81,7 +80,6 @@ Definitions available for MVEI only
 
 ***************************************/
 #if defined (ARM_MATH_HELIUM) || defined(ARM_MATH_MVEI)
-
 
 #include "arm_common_tables.h"
 
@@ -153,7 +151,6 @@ __STATIC_INLINE arm_status arm_mat_trans_32bit_4x4_mve(uint32_t * pDataSrc, uint
     return (ARM_MATH_SUCCESS);
 }
 
-
 __STATIC_INLINE arm_status arm_mat_trans_32bit_generic_mve(
     uint16_t    srcRows,
     uint16_t    srcCols,
@@ -180,7 +177,7 @@ __STATIC_INLINE arm_status arm_mat_trans_32bit_generic_mve(
         while (blkCnt > 0U)
         {
             vecIn = vldrwq_gather_shifted_offset_u32(pDataC, vecOffs);
-            vstrwq(pDataDestR, vecIn); 
+            vstrwq(pDataDestR, vecIn);
             pDataDestR += 4;
             pDataC = pDataC + srcCols * 4;
             /*
@@ -216,7 +213,6 @@ __STATIC_INLINE q31x4_t FAST_VSQRT_Q31(q31x4_t vecIn)
     q31_t           scale;
     q63_t           tmp64;
     q31x4_t         vecNrm, vecDst, vecIdx, vecSignBits;
-
 
     vecSignBits = vclsq(vecIn);
     vecSignBits = vbicq(vecSignBits, 1);

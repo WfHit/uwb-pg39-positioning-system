@@ -1,10 +1,10 @@
 /**
  * @file    oled_display.h
  * @brief   SSD1306 OLED Display Driver for UWB Positioning System
- * 
+ *
  * This file provides functions for controlling a 0.96" OLED display (128x64)
  * using SSD1306 controller via I2C interface for system status display.
- * 
+ *
  * @attention
  * Hardware connections:
  * - VCC: 3.3V or 5V power supply
@@ -12,7 +12,7 @@
  * - SCL: PB12 (I2C Clock)
  * - SDA: PB13 (I2C Data)
  * - RST: PA8 (Reset, optional)
- * 
+ *
  * @author  Refactored for UWB PG3.9 project
  * @date    2024
  */
@@ -107,22 +107,22 @@ typedef struct {
     uint8_t device_mode;            /* Tag or Anchor */
     uint8_t device_id;
     bool uwb_initialized;
-    
+
     /* Network status */
     uint8_t anchor_count;           /* For tags: discovered anchors */
     uint8_t tag_count;              /* For anchors: active tags */
     int8_t signal_strength;         /* RSSI in dBm */
-    
+
     /* Measurement data */
     float last_distance;            /* Last measured distance */
     uint32_t measurement_count;     /* Total measurements */
     uint32_t error_count;           /* Error count */
-    
+
     /* Position (for anchors) */
     float position_x;
     float position_y;
     float position_z;
-    
+
     /* System status */
     bool flash_ok;
     bool uart_ok;

@@ -1,15 +1,15 @@
 /**
  * @file    port.c
  * @brief   STM32F103 Hardware Abstraction Layer Implementation
- * 
+ *
  * This file provides the implementation of hardware-specific functions for the
  * STM32F103CB microcontroller interfacing with DecaWave UWB transceiver.
- * 
+ *
  * @attention
  * Copyright 2015-2020 (c) DecaWave Ltd, Dublin, Ireland.
  * Refactored for UWB PG3.9 project.
  * All rights reserved.
- * 
+ *
  * @author DecaWave/Refactored
  * @date 2024
  */
@@ -39,7 +39,7 @@ static void configure_unused_pins(void);
 
 /**
  * @brief Configure system clocks for STM32F103CB
- * 
+ *
  * Sets up:
  * - HSE (8MHz external crystal)
  * - PLL to achieve 72MHz system clock
@@ -63,22 +63,22 @@ void RCC_Configuration(void)
     if (HSEStartUpStatus != ERROR) {
         /* Initialize system (PLL configuration) */
         SystemInit();
-        
+
         /* Enable Prefetch Buffer for better performance */
         FLASH_PrefetchBufferCmd(FLASH_PrefetchBuffer_Enable);
 
         /* Configure Flash latency for 72MHz operation */
         FLASH_SetLatency(FLASH_Latency_2);
-        
+
         /* Configure AHB clock (HCLK = SYSCLK = 72MHz) */
         RCC_HCLKConfig(RCC_SYSCLK_Div1);
-        
+
         /* Configure APB2 clock (PCLK2 = HCLK = 72MHz) */
         RCC_PCLK2Config(RCC_HCLK_Div1);
-        
+
         /* Configure APB1 clock (PCLK1 = HCLK/2 = 36MHz) */
         RCC_PCLK1Config(RCC_HCLK_Div2);
-        
+
         /* Configure ADC clock (max 14MHz) */
         RCC_ADCCLKConfig(RCC_PCLK2_Div6);
     }
@@ -89,7 +89,7 @@ void RCC_Configuration(void)
     /* Enable peripheral clocks */
     /* SPI1 for UWB communication */
     RCC_APB2PeriphClockCmd(RCC_APB2Periph_SPI1, ENABLE);
-    
+
     /* Enable all GPIO ports and AFIO */
     RCC_APB2PeriphClockCmd(
         RCC_APB2Periph_GPIOA | RCC_APB2Periph_GPIOB |
@@ -100,7 +100,7 @@ void RCC_Configuration(void)
 
 /**
  * @brief Configure SysTick timer for system timing
- * 
+ *
  * Sets up SysTick to generate interrupts at 1MHz rate (1μs resolution)
  * for precise timing measurements required by UWB ranging.
  */
@@ -192,23 +192,23 @@ void GPIO_Configuration(void)
 static void configure_unused_pins(void)
 {
     GPIO_InitTypeDef GPIO_InitStructure;
-    
+
     /* Configure unused pins as analog input to minimize power consumption */
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
-    
+
     /* Configure unused GPIOA pins */
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 | 
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_8 | GPIO_Pin_9 | GPIO_Pin_10 |
                                   GPIO_Pin_11 | GPIO_Pin_12;
     GPIO_Init(GPIOA, &GPIO_InitStructure);
-    
+
     /* Configure unused GPIOB pins */
-    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_2 | GPIO_Pin_3 | 
-                                  GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 | 
-                                  GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 | 
-                                  GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12 | 
+    GPIO_InitStructure.GPIO_Pin = GPIO_Pin_0 | GPIO_Pin_2 | GPIO_Pin_3 |
+                                  GPIO_Pin_4 | GPIO_Pin_5 | GPIO_Pin_6 |
+                                  GPIO_Pin_7 | GPIO_Pin_8 | GPIO_Pin_9 |
+                                  GPIO_Pin_10 | GPIO_Pin_11 | GPIO_Pin_12 |
                                   GPIO_Pin_13;
     GPIO_Init(GPIOB, &GPIO_InitStructure);
-    
+
     /* Configure all GPIOC pins as analog (not used in this design) */
     GPIO_InitStructure.GPIO_Pin = GPIO_Pin_All;
     GPIO_Init(GPIOC, &GPIO_InitStructure);
@@ -221,7 +221,7 @@ void peripherals_init(void)
 {
     /* System configuration already done in main initialization sequence */
     /* Additional peripheral initialization can be added here */
-    
+
     /* Initialize UWB reset interrupt if needed */
     setup_DWICRSTnIRQ(1);
 }
@@ -237,13 +237,13 @@ void reset_DWIC(void)
 {
     /* Assert reset (active low) */
     GPIO_SET_LOW(DW_RESET_GPIO_PORT, DW_RESET_PIN);
-    
+
     /* Hold reset for minimum time */
     Delay_ms(2);
-    
+
     /* Release reset */
     GPIO_SET_HIGH(DW_RESET_GPIO_PORT, DW_RESET_PIN);
-    
+
     /* Wait for chip to come out of reset */
     Delay_ms(5);
 }
@@ -257,7 +257,7 @@ void wakeup_device_with_io(void)
     DW_WAKEUP_HIGH();
     Delay_ms(1);
     DW_WAKEUP_LOW();
-    
+
     /* Wait for device to wake up */
     Delay_ms(2);
 }
@@ -268,7 +268,7 @@ void wakeup_device_with_io(void)
 
 /**
  * @brief Install UWB interrupt service routine
- * 
+ *
  * @param isr Function pointer to interrupt handler
  */
 void port_set_dwic_isr(port_dwic_isr_t isr)
@@ -276,10 +276,10 @@ void port_set_dwic_isr(port_dwic_isr_t isr)
 #if DECAIRQ_EXTI_USEIRQ
     /* Disable interrupts while installing handler */
     port_DisableEXT_IRQ();
-    
+
     /* Install the handler */
     port_dwic_isr = isr;
-    
+
     /* Re-enable interrupts if handler is valid */
     if (isr != NULL) {
         port_EnableEXT_IRQ();
@@ -289,7 +289,7 @@ void port_set_dwic_isr(port_dwic_isr_t isr)
 
 /**
  * @brief Setup UWB reset interrupt
- * 
+ *
  * @param enable 1 to enable interrupt, 0 to disable
  */
 void setup_DWICRSTnIRQ(int enable)
@@ -300,14 +300,14 @@ void setup_DWICRSTnIRQ(int enable)
     if (enable) {
         /* Configure EXTI line for reset pin */
         GPIO_EXTILineConfig(DW_RESET_EXTI_PORT_SOURCE, DW_RESET_EXTI_PIN_SOURCE);
-        
+
         /* Configure EXTI line */
         EXTI_InitStructure.EXTI_Line = DW_RESET_EXTI_LINE;
         EXTI_InitStructure.EXTI_Mode = EXTI_Mode_Interrupt;
         EXTI_InitStructure.EXTI_Trigger = EXTI_Trigger_Rising;
         EXTI_InitStructure.EXTI_LineCmd = ENABLE;
         EXTI_Init(&EXTI_InitStructure);
-        
+
         /* Configure NVIC */
         NVIC_InitStructure.NVIC_IRQChannel = DW_RESET_EXTI_IRQn;
         NVIC_InitStructure.NVIC_IRQChannelPreemptionPriority = 0;
@@ -319,7 +319,7 @@ void setup_DWICRSTnIRQ(int enable)
         EXTI_InitStructure.EXTI_Line = DW_RESET_EXTI_LINE;
         EXTI_InitStructure.EXTI_LineCmd = DISABLE;
         EXTI_Init(&EXTI_InitStructure);
-        
+
         /* Disable NVIC */
         NVIC_InitStructure.NVIC_IRQChannel = DW_RESET_EXTI_IRQn;
         NVIC_InitStructure.NVIC_IRQChannelCmd = DISABLE;
@@ -329,7 +329,7 @@ void setup_DWICRSTnIRQ(int enable)
 
 /**
  * @brief Check if external interrupt is enabled
- * 
+ *
  * @param IRQn Interrupt number to check
  * @return IT_SET if enabled, IT_RESET if disabled
  */
@@ -349,7 +349,7 @@ void process_dwRSTn_irq(void)
 {
     /* Clear the EXTI line pending bit */
     EXTI_ClearITPendingBit(DW_RESET_EXTI_LINE);
-    
+
     /* Handle reset event - reinitialize UWB device */
     /* This can be implemented based on application requirements */
 }
@@ -390,7 +390,7 @@ void EXTI3_IRQHandler(void)
     if (EXTI_GetITStatus(DW_IRQ_EXTI_LINE) != RESET) {
         /* Clear the EXTI line pending bit */
         EXTI_ClearITPendingBit(DW_IRQ_EXTI_LINE);
-        
+
         /* Process the interrupt */
         process_deca_irq();
     }

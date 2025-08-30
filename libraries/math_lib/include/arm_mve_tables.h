@@ -32,11 +32,6 @@
 
  #include "arm_math.h"
 
- 
-
-
- 
-
 #if defined(ARM_MATH_MVEF) && !defined(ARM_MATH_AUTOVECTORIZE)
 
 #if !defined(ARM_DSP_CONFIG_TABLES) || defined(ARM_FFT_ALLOW_TABLES)
@@ -91,14 +86,11 @@ extern float32_t rearranged_twiddle_stride2_4096_f32[2728];
 extern float32_t rearranged_twiddle_stride3_4096_f32[2728];
 #endif
 
-
 #endif /* !defined(ARM_DSP_CONFIG_TABLES) || defined(ARM_FFT_ALLOW_TABLES) */
 
 #endif /* defined(ARM_MATH_MVEF) && !defined(ARM_MATH_AUTOVECTORIZE) */
 
-
-
-#if defined(ARM_MATH_MVEI) 
+#if defined(ARM_MATH_MVEI)
 
 #if !defined(ARM_DSP_CONFIG_TABLES) || defined(ARM_FFT_ALLOW_TABLES)
 
@@ -152,14 +144,11 @@ extern q31_t rearranged_twiddle_stride2_4096_q31[2728];
 extern q31_t rearranged_twiddle_stride3_4096_q31[2728];
 #endif
 
-
 #endif /* !defined(ARM_DSP_CONFIG_TABLES) || defined(ARM_FFT_ALLOW_TABLES) */
 
 #endif /* defined(ARM_MATH_MVEI) */
 
-
-
-#if defined(ARM_MATH_MVEI) 
+#if defined(ARM_MATH_MVEI)
 
 #if !defined(ARM_DSP_CONFIG_TABLES) || defined(ARM_FFT_ALLOW_TABLES)
 
@@ -213,23 +202,17 @@ extern q15_t rearranged_twiddle_stride2_4096_q15[2728];
 extern q15_t rearranged_twiddle_stride3_4096_q15[2728];
 #endif
 
-
 #endif /* !defined(ARM_DSP_CONFIG_TABLES) || defined(ARM_FFT_ALLOW_TABLES) */
 
 #endif /* defined(ARM_MATH_MVEI) */
 
-
-
-#if defined(ARM_MATH_MVEI) 
+#if defined(ARM_MATH_MVEI)
 
 #if !defined(ARM_DSP_CONFIG_TABLES) || defined(ARM_FFT_ALLOW_TABLES)
 
-
 #endif /* !defined(ARM_DSP_CONFIG_TABLES) || defined(ARM_FFT_ALLOW_TABLES) */
 
 #endif /* defined(ARM_MATH_MVEI) */
-
-
 
 #endif /*_ARM_MVE_TABLES_H*/
 

@@ -40,7 +40,6 @@ extern "C"
 
 static const float32_t __logf_rng_f32=0.693147180f;
 
-
 /* fast inverse approximation (3x newton) */
 __STATIC_INLINE f32x4_t vrecip_medprec_f32(
     f32x4_t x)
@@ -154,7 +153,6 @@ __STATIC_INLINE f32x4_t vmant_exp_f32(
     *e = n;
     return r.f;
 }
-
 
 __STATIC_INLINE f32x4_t vlogq_f32(f32x4_t vecIn)
 {
@@ -320,7 +318,6 @@ __STATIC_INLINE  float32x4_t arm_vec_exponent_f32(float32x4_t x, int32_t nb)
     return(r);
 }
 
-
 __STATIC_INLINE float32x4_t __arm_vec_sqrt_f32_neon(float32x4_t  x)
 {
     float32x4_t x1 = vmaxq_f32(x, vdupq_n_f32(FLT_MIN));
@@ -362,7 +359,6 @@ __STATIC_INLINE int32x4_t __arm_vec_sqrt_q31_neon(int32x4_t vec)
 #ifdef   __cplusplus
 }
 #endif
-
 
 #endif /* _ARM_VEC_MATH_H */
 

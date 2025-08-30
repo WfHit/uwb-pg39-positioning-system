@@ -37,35 +37,35 @@ bool uwb_system_init(uint8_t device_mode, uint8_t device_id)
         last_error = ERROR_COMMUNICATION;
         return false;
     }
-    
+
     // Load configuration from flash
     if(!load_configuration_from_flash())
     {
         // Use default configuration if flash read fails
         reset_to_factory_defaults();
     }
-    
+
     // Override with provided parameters
     current_device_mode = device_mode;
     current_device_id = device_id;
-    
+
     // Initialize positioning adapter (includes ranging functionality)
     if(!positioning_adapter_init())
     {
         last_error = ERROR_COMMUNICATION;
         return false;
     }
-    
+
     // Set device ID for ranging operations
     positioning_adapter_set_device_id(device_id);
-    
+
     // Initialize UART protocol
     if(!uart_protocol_init(UART_BAUDRATE))
     {
         last_error = ERROR_COMMUNICATION;
         return false;
     }
-    
+
     // Configure device based on mode
     bool config_success = false;
     switch(device_mode)
@@ -74,20 +74,20 @@ bool uwb_system_init(uint8_t device_mode, uint8_t device_id)
             config_success = configure_as_tag(device_id);
             break;
         case DEVICE_MODE_ANCHOR:
-            config_success = configure_as_anchor(device_id, system_config.zone_id, 
+            config_success = configure_as_anchor(device_id, system_config.zone_id,
                                                &system_config.anchor_position);
             break;
         default:
             last_error = ERROR_INVALID_DATA;
             return false;
     }
-    
+
     if(!config_success)
     {
         last_error = ERROR_INVALID_DATA;
         return false;
     }
-    
+
     system_initialized = true;
     last_error = ERROR_NONE;
     return true;
@@ -96,10 +96,10 @@ bool uwb_system_init(uint8_t device_mode, uint8_t device_id)
 void uwb_system_process(void)
 {
     if(!system_initialized) return;
-    
+
     // Process UART communication
     uart_protocol_process();
-    
+
     // Process based on device mode
     switch(current_device_mode)
     {
@@ -110,7 +110,7 @@ void uwb_system_process(void)
             anchor_manager_process();
             break;
     }
-    
+
     // Handle any errors
     uint8_t error = get_last_error();
     if(error != ERROR_NONE)
@@ -123,7 +123,7 @@ bool configure_as_tag(uint8_t tag_id)
 {
     current_device_mode = DEVICE_MODE_TAG;
     current_device_id = tag_id;
-    
+
     // Initialize tag coordinator
     return tag_coordinator_init(tag_id);
 }
@@ -131,10 +131,10 @@ bool configure_as_tag(uint8_t tag_id)
 bool configure_as_anchor(uint8_t anchor_id, uint8_t zone_id, const position_t* position)
 {
     if(!position) return false;
-    
+
     current_device_mode = DEVICE_MODE_ANCHOR;
     current_device_id = anchor_id;
-    
+
     // Initialize anchor manager
     return anchor_manager_init(anchor_id, zone_id, position);
 }
@@ -142,9 +142,9 @@ bool configure_as_anchor(uint8_t anchor_id, uint8_t zone_id, const position_t* p
 void get_system_status(system_stats_t* stats)
 {
     if(!stats) return;
-    
+
     memset(stats, 0, sizeof(system_stats_t));
-    
+
     switch(current_device_mode)
     {
         case DEVICE_MODE_TAG:
@@ -160,7 +160,7 @@ void get_system_status(system_stats_t* stats)
             }
             break;
     }
-    
+
     // Add UART statistics
     stats->uart_frames_sent = get_uart_frames_sent();
     stats->uart_errors = get_uart_errors();
@@ -179,12 +179,12 @@ uint8_t get_device_id(void)
 bool is_system_ready(void)
 {
     if(!system_initialized) return false;
-    
+
     // Note: positioning adapter doesn't have a specific ready check
     // We assume it's ready if initialized successfully
     bool positioning_ready = true;
     bool uart_ready = is_uart_ready();
-    
+
     bool mode_ready = false;
     switch(current_device_mode)
     {
@@ -195,7 +195,7 @@ bool is_system_ready(void)
             mode_ready = anchor_manager_is_active();
             break;
     }
-    
+
     return positioning_ready && uart_ready && mode_ready;
 }
 
@@ -206,7 +206,7 @@ bool load_configuration_from_flash(void)
     {
         return false;
     }
-    
+
     // Verify checksum
     uint32_t calculated_checksum = 0;
     uint8_t* config_bytes = (uint8_t*)&system_config;
@@ -214,12 +214,12 @@ bool load_configuration_from_flash(void)
     {
         calculated_checksum += config_bytes[i];
     }
-    
+
     if(calculated_checksum != system_config.checksum)
     {
         return false; // Invalid configuration
     }
-    
+
     return true;
 }
 
@@ -228,7 +228,7 @@ bool save_configuration_to_flash(void)
     // Update current configuration
     system_config.device_mode = current_device_mode;
     system_config.device_id = current_device_id;
-    
+
     // Calculate checksum
     system_config.checksum = 0;
     uint8_t* config_bytes = (uint8_t*)&system_config;
@@ -236,7 +236,7 @@ bool save_configuration_to_flash(void)
     {
         system_config.checksum += config_bytes[i];
     }
-    
+
     // Write to flash
     return hw_flash_write(0x08000000, (uint8_t*)&system_config, sizeof(system_config_t));
 }
@@ -244,7 +244,7 @@ bool save_configuration_to_flash(void)
 void reset_to_factory_defaults(void)
 {
     memset(&system_config, 0, sizeof(system_config_t));
-    
+
     // Set default values
     system_config.device_mode = DEVICE_MODE_TAG;
     system_config.device_id = 1;
@@ -282,7 +282,7 @@ void system_error_handler(uint8_t error_code)
         default:
             break;
     }
-    
+
     // Clear the error after handling
     clear_error_flags();
 }
@@ -311,10 +311,10 @@ void uwb_system_shutdown(void)
                 anchor_manager_reset();
                 break;
         }
-        
+
         // Save configuration
         save_configuration_to_flash();
-        
+
         system_initialized = false;
     }
 }

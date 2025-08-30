@@ -1,11 +1,11 @@
 /**
  * @file    array.h
  * @brief   Dynamic array utility functions for positioning calculations
- * 
+ *
  * This header provides a simple dynamic array implementation for float values,
  * primarily used in matrix calculations for positioning algorithms. The arrays
  * automatically manage memory allocation and provide bounds-safe access methods.
- * 
+ *
  * @author  UWB PG3.9 project
  * @date    2024
  */
@@ -22,12 +22,12 @@
 
 /**
  * @brief Dynamic float array structure
- * 
+ *
  * This structure encapsulates a dynamically allocated array of float values
  * along with its size. Used primarily for temporary storage during matrix
  * operations in positioning calculations.
  */
-typedef struct 
+typedef struct
 {
 	float *array;       ///< Pointer to dynamically allocated float array
 	uint16_t size;      ///< Number of elements in the array

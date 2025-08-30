@@ -6,25 +6,24 @@
  ******************************************************************************/
 
 //------------------------------------------------------------------------------
-//
+
 // Copyright (c) 2017-2019 IAR Systems
-// Copyright (c) 2017-2019 Arm Limited. All rights reserved. 
-//
+// Copyright (c) 2017-2019 Arm Limited. All rights reserved.
+
 // SPDX-License-Identifier: Apache-2.0
-//
+
 // Licensed under the Apache License, Version 2.0 (the "License")
 // you may not use this file except in compliance with the License.
 // You may obtain a copy of the License at
 //     http://www.apache.org/licenses/LICENSE-2.0
-//
+
 // Unless required by applicable law or agreed to in writing, software
 // distributed under the License is distributed on an "AS IS" BASIS,
 // WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 // See the License for the specific language governing permissions and
 // limitations under the License.
-//
-//------------------------------------------------------------------------------
 
+//------------------------------------------------------------------------------
 
 #ifndef __CMSIS_ICCARM_H__
 #define __CMSIS_ICCARM_H__
@@ -54,7 +53,6 @@
     #define __ALIGNED(x)
   #endif
 #endif
-
 
 /* Define compiler macros for CPU architecture, used in CMSIS 5.
  */
@@ -98,8 +96,6 @@
   #endif
 #endif
 
-
-
 #if defined(__ARM_ARCH_6M__) && __ARM_ARCH_6M__==1
   #define __IAR_M0_FAMILY  1
 #elif defined(__ARM_ARCH_8M_BASE__) && __ARM_ARCH_8M_BASE__==1
@@ -107,7 +103,6 @@
 #else
   #define __IAR_M0_FAMILY  0
 #endif
-
 
 #ifndef __ASM
   #define __ASM __asm
@@ -187,7 +182,6 @@ __IAR_FT uint16_t __iar_uint16_read(void const *ptr)
 #pragma language=restore
 #define __UNALIGNED_UINT16_READ(PTR) __iar_uint16_read(PTR)
 #endif
-
 
 #ifndef __UNALIGNED_UINT16_WRITE
 #pragma language=save
@@ -296,7 +290,6 @@ __packed struct  __iar_u32 { uint32_t v; };
   #define __enable_irq        __iar_builtin_enable_interrupt
   #define __arm_rsr           __iar_builtin_rsr
   #define __arm_wsr           __iar_builtin_wsr
-
 
   #define __get_APSR()                (__arm_rsr("APSR"))
   #define __get_BASEPRI()             (__arm_rsr("BASEPRI"))
@@ -503,7 +496,6 @@ __packed struct  __iar_u32 { uint32_t v; };
     #define __get_APSR  __cmsis_iar_get_APSR_not_active
   #endif
 
-
   #if (!((defined (__FPU_PRESENT) && (__FPU_PRESENT == 1U)) && \
          (defined (__FPU_USED   ) && (__FPU_USED    == 1U))     ))
     #define __get_FPSCR __cmsis_iar_get_FPSR_not_active
@@ -591,7 +583,6 @@ __packed struct  __iar_u32 { uint32_t v; };
     }
   #endif
 
-
   /* __CORTEX_M is defined in core_cm0.h, core_cm3.h and core_cm4.h. */
   #if (__CORTEX_M >= 0x03)
 
@@ -607,10 +598,8 @@ __packed struct  __iar_u32 { uint32_t v; };
       __asm volatile("MSR      BASEPRI_MAX,%0"::"r" (value));
     }
 
-
     #define __enable_fault_irq  __enable_fiq
     #define __disable_fault_irq __disable_fiq
-
 
   #endif /* (__CORTEX_M >= 0x03) */
 
@@ -874,7 +863,6 @@ __packed struct  __iar_u32 { uint32_t v; };
 
 #if ((defined (__ARM_ARCH_8M_MAIN__ ) && (__ARM_ARCH_8M_MAIN__ == 1)) || \
      (defined (__ARM_ARCH_8M_BASE__ ) && (__ARM_ARCH_8M_BASE__ == 1))    )
-
 
   __IAR_FT uint8_t __LDAB(volatile uint8_t *ptr)
   {

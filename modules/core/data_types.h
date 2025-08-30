@@ -13,7 +13,7 @@ typedef uint8_t u8;
 /** @brief Maximum number of anchors in the system */
 #define ANCHOR_LIST_COUNT           MAX_TOTAL_ANCHORS
 
-/** @brief Maximum number of tags that can be tracked */  
+/** @brief Maximum number of tags that can be tracked */
 #define TAG_USE_MAX_NUM             20
 
 /** @brief Global flag indicating which anchors have valid distance calculations */
@@ -26,7 +26,7 @@ extern uint32_t Calculate_FLAG;
 /** @brief Legacy anchor structure for positioning algorithms */
 typedef struct {
     float x;        ///< X coordinate in meters
-    float y;        ///< Y coordinate in meters  
+    float y;        ///< Y coordinate in meters
     float z;        ///< Z coordinate in meters
     float dist;     ///< Distance measurement in meters
 } Anchor_t;
@@ -56,18 +56,18 @@ typedef struct {
 // Measurement Data Structure for UART Output
 typedef struct {
     uint16_t frame_header;      // 0xAA55
-    uint8_t  tag_id;           
-    uint32_t timestamp_ms;     
+    uint8_t  tag_id;
+    uint32_t timestamp_ms;
     uint8_t  anchor_id;        // Single measurement per frame
-    uint32_t distance_mm;  
-    int16_t  anchor_x_cm;     
-    int16_t  anchor_y_cm;     
-    int16_t  anchor_z_cm;     
-    uint8_t  signal_quality; 
-    uint8_t  zone_id;      
+    uint32_t distance_mm;
+    int16_t  anchor_x_cm;
+    int16_t  anchor_y_cm;
+    int16_t  anchor_z_cm;
+    uint8_t  signal_quality;
+    uint8_t  zone_id;
     uint8_t  algorithm_used;   // 0=DS-TWR, 1=HDS-TWR
     uint8_t  measurement_sequence;
-    uint16_t checksum;         
+    uint16_t checksum;
 } __attribute__((packed)) uwb_measurement_frame_t;
 
 // Discovery Request Frame

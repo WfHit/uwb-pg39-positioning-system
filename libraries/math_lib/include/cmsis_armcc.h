@@ -25,7 +25,6 @@
 #ifndef __CMSIS_ARMCC_H
 #define __CMSIS_ARMCC_H
 
-
 #if defined(__ARMCC_VERSION) && (__ARMCC_VERSION < 400677)
   #error "Please use Arm Compiler Toolchain V4.0.677 or later!"
 #endif
@@ -63,9 +62,9 @@
 #ifndef   __STATIC_INLINE
   #define __STATIC_INLINE                        static __inline
 #endif
-#ifndef   __STATIC_FORCEINLINE                 
+#ifndef   __STATIC_FORCEINLINE
   #define __STATIC_FORCEINLINE                   static __forceinline
-#endif           
+#endif
 #ifndef   __NO_RETURN
   #define __NO_RETURN                            __declspec(noreturn)
 #endif
@@ -144,7 +143,6 @@
  */
 /* intrinsic void __enable_irq();     */
 
-
 /**
   \brief   Disable IRQ Interrupts
   \details Disables IRQ interrupts by setting the I-bit in the CPSR.
@@ -163,7 +161,6 @@ __STATIC_INLINE uint32_t __get_CONTROL(void)
   return(__regControl);
 }
 
-
 /**
   \brief   Set Control Register
   \details Writes the given value to the Control Register.
@@ -174,7 +171,6 @@ __STATIC_INLINE void __set_CONTROL(uint32_t control)
   register uint32_t __regControl         __ASM("control");
   __regControl = control;
 }
-
 
 /**
   \brief   Get IPSR Register
@@ -187,7 +183,6 @@ __STATIC_INLINE uint32_t __get_IPSR(void)
   return(__regIPSR);
 }
 
-
 /**
   \brief   Get APSR Register
   \details Returns the content of the APSR Register.
@@ -198,7 +193,6 @@ __STATIC_INLINE uint32_t __get_APSR(void)
   register uint32_t __regAPSR          __ASM("apsr");
   return(__regAPSR);
 }
-
 
 /**
   \brief   Get xPSR Register
@@ -211,7 +205,6 @@ __STATIC_INLINE uint32_t __get_xPSR(void)
   return(__regXPSR);
 }
 
-
 /**
   \brief   Get Process Stack Pointer
   \details Returns the current value of the Process Stack Pointer (PSP).
@@ -222,7 +215,6 @@ __STATIC_INLINE uint32_t __get_PSP(void)
   register uint32_t __regProcessStackPointer  __ASM("psp");
   return(__regProcessStackPointer);
 }
-
 
 /**
   \brief   Set Process Stack Pointer
@@ -235,7 +227,6 @@ __STATIC_INLINE void __set_PSP(uint32_t topOfProcStack)
   __regProcessStackPointer = topOfProcStack;
 }
 
-
 /**
   \brief   Get Main Stack Pointer
   \details Returns the current value of the Main Stack Pointer (MSP).
@@ -246,7 +237,6 @@ __STATIC_INLINE uint32_t __get_MSP(void)
   register uint32_t __regMainStackPointer     __ASM("msp");
   return(__regMainStackPointer);
 }
-
 
 /**
   \brief   Set Main Stack Pointer
@@ -259,7 +249,6 @@ __STATIC_INLINE void __set_MSP(uint32_t topOfMainStack)
   __regMainStackPointer = topOfMainStack;
 }
 
-
 /**
   \brief   Get Priority Mask
   \details Returns the current state of the priority mask bit from the Priority Mask Register.
@@ -270,7 +259,6 @@ __STATIC_INLINE uint32_t __get_PRIMASK(void)
   register uint32_t __regPriMask         __ASM("primask");
   return(__regPriMask);
 }
-
 
 /**
   \brief   Set Priority Mask
@@ -283,7 +271,6 @@ __STATIC_INLINE void __set_PRIMASK(uint32_t priMask)
   __regPriMask = (priMask);
 }
 
-
 #if ((defined (__ARM_ARCH_7M__ ) && (__ARM_ARCH_7M__  == 1)) || \
      (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))     )
 
@@ -294,14 +281,12 @@ __STATIC_INLINE void __set_PRIMASK(uint32_t priMask)
  */
 #define __enable_fault_irq                __enable_fiq
 
-
 /**
   \brief   Disable FIQ
   \details Disables FIQ interrupts by setting the F-bit in the CPSR.
            Can only be executed in Privileged modes.
  */
 #define __disable_fault_irq               __disable_fiq
-
 
 /**
   \brief   Get Base Priority
@@ -314,7 +299,6 @@ __STATIC_INLINE uint32_t  __get_BASEPRI(void)
   return(__regBasePri);
 }
 
-
 /**
   \brief   Set Base Priority
   \details Assigns the given value to the Base Priority register.
@@ -325,7 +309,6 @@ __STATIC_INLINE void __set_BASEPRI(uint32_t basePri)
   register uint32_t __regBasePri         __ASM("basepri");
   __regBasePri = (basePri & 0xFFU);
 }
-
 
 /**
   \brief   Set Base Priority with condition
@@ -339,7 +322,6 @@ __STATIC_INLINE void __set_BASEPRI_MAX(uint32_t basePri)
   __regBasePriMax = (basePri & 0xFFU);
 }
 
-
 /**
   \brief   Get Fault Mask
   \details Returns the current value of the Fault Mask register.
@@ -350,7 +332,6 @@ __STATIC_INLINE uint32_t __get_FAULTMASK(void)
   register uint32_t __regFaultMask       __ASM("faultmask");
   return(__regFaultMask);
 }
-
 
 /**
   \brief   Set Fault Mask
@@ -365,7 +346,6 @@ __STATIC_INLINE void __set_FAULTMASK(uint32_t faultMask)
 
 #endif /* ((defined (__ARM_ARCH_7M__ ) && (__ARM_ARCH_7M__  == 1)) || \
            (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))     ) */
-
 
 /**
   \brief   Get FPSCR
@@ -383,7 +363,6 @@ __STATIC_INLINE uint32_t __get_FPSCR(void)
 #endif
 }
 
-
 /**
   \brief   Set FPSCR
   \details Assigns the given value to the Floating Point Status/Control register.
@@ -400,9 +379,7 @@ __STATIC_INLINE void __set_FPSCR(uint32_t fpscr)
 #endif
 }
 
-
 /*@} end of CMSIS_Core_RegAccFunctions */
-
 
 /* ##########################  Core Instruction Access  ######################### */
 /** \defgroup CMSIS_Core_InstructionInterface CMSIS Core Instruction Interface
@@ -416,13 +393,11 @@ __STATIC_INLINE void __set_FPSCR(uint32_t fpscr)
  */
 #define __NOP                             __nop
 
-
 /**
   \brief   Wait For Interrupt
   \details Wait For Interrupt is a hint instruction that suspends execution until one of a number of events occurs.
  */
 #define __WFI                             __wfi
-
 
 /**
   \brief   Wait For Event
@@ -431,13 +406,11 @@ __STATIC_INLINE void __set_FPSCR(uint32_t fpscr)
  */
 #define __WFE                             __wfe
 
-
 /**
   \brief   Send Event
   \details Send Event is a hint instruction. It causes an event to be signaled to the CPU.
  */
 #define __SEV                             __sev
-
 
 /**
   \brief   Instruction Synchronization Barrier
@@ -461,7 +434,6 @@ __STATIC_INLINE void __set_FPSCR(uint32_t fpscr)
  */
 #define __DMB()                           __dmb(0xF)
 
-                  
 /**
   \brief   Reverse byte order (32 bit)
   \details Reverses the byte order in unsigned integer value. For example, 0x12345678 becomes 0x78563412.
@@ -469,7 +441,6 @@ __STATIC_INLINE void __set_FPSCR(uint32_t fpscr)
   \return               Reversed value
  */
 #define __REV                             __rev
-
 
 /**
   \brief   Reverse byte order (16 bit)
@@ -485,7 +456,6 @@ __attribute__((section(".rev16_text"))) __STATIC_INLINE __ASM uint32_t __REV16(u
 }
 #endif
 
-
 /**
   \brief   Reverse byte order (16 bit)
   \details Reverses the byte order in a 16-bit value and returns the signed 16-bit result. For example, 0x0080 becomes 0x8000.
@@ -500,7 +470,6 @@ __attribute__((section(".revsh_text"))) __STATIC_INLINE __ASM int16_t __REVSH(in
 }
 #endif
 
-
 /**
   \brief   Rotate Right in unsigned value (32 bit)
   \details Rotate Right (immediate) provides the value of the contents of a register rotated by a variable number of bits.
@@ -510,7 +479,6 @@ __attribute__((section(".revsh_text"))) __STATIC_INLINE __ASM int16_t __REVSH(in
  */
 #define __ROR                             __ror
 
-
 /**
   \brief   Breakpoint
   \details Causes the processor to enter Debug state.
@@ -519,7 +487,6 @@ __attribute__((section(".revsh_text"))) __STATIC_INLINE __ASM int16_t __REVSH(in
                  If required, a debugger can use it to store additional information about the breakpoint.
  */
 #define __BKPT(value)                       __breakpoint(value)
-
 
 /**
   \brief   Reverse bit order of value
@@ -548,7 +515,6 @@ __attribute__((always_inline)) __STATIC_INLINE uint32_t __RBIT(uint32_t value)
 }
 #endif
 
-
 /**
   \brief   Count leading zeros
   \details Counts the number of leading zeros of a data value.
@@ -556,7 +522,6 @@ __attribute__((always_inline)) __STATIC_INLINE uint32_t __RBIT(uint32_t value)
   \return             number of leading zeros in value
  */
 #define __CLZ                             __clz
-
 
 #if ((defined (__ARM_ARCH_7M__ ) && (__ARM_ARCH_7M__  == 1)) || \
      (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))     )
@@ -573,7 +538,6 @@ __attribute__((always_inline)) __STATIC_INLINE uint32_t __RBIT(uint32_t value)
   #define __LDREXB(ptr)          _Pragma("push") _Pragma("diag_suppress 3731") ((uint8_t ) __ldrex(ptr))  _Pragma("pop")
 #endif
 
-
 /**
   \brief   LDR Exclusive (16 bit)
   \details Executes a exclusive LDR instruction for 16 bit values.
@@ -586,7 +550,6 @@ __attribute__((always_inline)) __STATIC_INLINE uint32_t __RBIT(uint32_t value)
   #define __LDREXH(ptr)          _Pragma("push") _Pragma("diag_suppress 3731") ((uint16_t) __ldrex(ptr))  _Pragma("pop")
 #endif
 
-
 /**
   \brief   LDR Exclusive (32 bit)
   \details Executes a exclusive LDR instruction for 32 bit values.
@@ -598,7 +561,6 @@ __attribute__((always_inline)) __STATIC_INLINE uint32_t __RBIT(uint32_t value)
 #else
   #define __LDREXW(ptr)          _Pragma("push") _Pragma("diag_suppress 3731") ((uint32_t ) __ldrex(ptr))  _Pragma("pop")
 #endif
-
 
 /**
   \brief   STR Exclusive (8 bit)
@@ -614,7 +576,6 @@ __attribute__((always_inline)) __STATIC_INLINE uint32_t __RBIT(uint32_t value)
   #define __STREXB(value, ptr)   _Pragma("push") _Pragma("diag_suppress 3731") __strex(value, ptr)        _Pragma("pop")
 #endif
 
-
 /**
   \brief   STR Exclusive (16 bit)
   \details Executes a exclusive STR instruction for 16 bit values.
@@ -628,7 +589,6 @@ __attribute__((always_inline)) __STATIC_INLINE uint32_t __RBIT(uint32_t value)
 #else
   #define __STREXH(value, ptr)   _Pragma("push") _Pragma("diag_suppress 3731") __strex(value, ptr)        _Pragma("pop")
 #endif
-
 
 /**
   \brief   STR Exclusive (32 bit)
@@ -644,13 +604,11 @@ __attribute__((always_inline)) __STATIC_INLINE uint32_t __RBIT(uint32_t value)
   #define __STREXW(value, ptr)   _Pragma("push") _Pragma("diag_suppress 3731") __strex(value, ptr)        _Pragma("pop")
 #endif
 
-
 /**
   \brief   Remove the exclusive lock
   \details Removes the exclusive lock which is created by LDREX.
  */
 #define __CLREX                           __clrex
-
 
 /**
   \brief   Signed Saturate
@@ -661,7 +619,6 @@ __attribute__((always_inline)) __STATIC_INLINE uint32_t __RBIT(uint32_t value)
  */
 #define __SSAT                            __ssat
 
-
 /**
   \brief   Unsigned Saturate
   \details Saturates an unsigned value.
@@ -670,7 +627,6 @@ __attribute__((always_inline)) __STATIC_INLINE uint32_t __RBIT(uint32_t value)
   \return             Saturated value
  */
 #define __USAT                            __usat
-
 
 /**
   \brief   Rotate Right with Extend (32 bit)
@@ -687,7 +643,6 @@ __attribute__((section(".rrx_text"))) __STATIC_INLINE __ASM uint32_t __RRX(uint3
 }
 #endif
 
-
 /**
   \brief   LDRT Unprivileged (8 bit)
   \details Executes a Unprivileged LDRT instruction for 8 bit value.
@@ -695,7 +650,6 @@ __attribute__((section(".rrx_text"))) __STATIC_INLINE __ASM uint32_t __RRX(uint3
   \return             value of type uint8_t at (*ptr)
  */
 #define __LDRBT(ptr)                      ((uint8_t )  __ldrt(ptr))
-
 
 /**
   \brief   LDRT Unprivileged (16 bit)
@@ -705,7 +659,6 @@ __attribute__((section(".rrx_text"))) __STATIC_INLINE __ASM uint32_t __RRX(uint3
  */
 #define __LDRHT(ptr)                      ((uint16_t)  __ldrt(ptr))
 
-
 /**
   \brief   LDRT Unprivileged (32 bit)
   \details Executes a Unprivileged LDRT instruction for 32 bit values.
@@ -713,7 +666,6 @@ __attribute__((section(".rrx_text"))) __STATIC_INLINE __ASM uint32_t __RRX(uint3
   \return        value of type uint32_t at (*ptr)
  */
 #define __LDRT(ptr)                       ((uint32_t ) __ldrt(ptr))
-
 
 /**
   \brief   STRT Unprivileged (8 bit)
@@ -723,7 +675,6 @@ __attribute__((section(".rrx_text"))) __STATIC_INLINE __ASM uint32_t __RRX(uint3
  */
 #define __STRBT(value, ptr)               __strt(value, ptr)
 
-
 /**
   \brief   STRT Unprivileged (16 bit)
   \details Executes a Unprivileged STRT instruction for 16 bit values.
@@ -731,7 +682,6 @@ __attribute__((section(".rrx_text"))) __STATIC_INLINE __ASM uint32_t __RRX(uint3
   \param [in]    ptr  Pointer to location
  */
 #define __STRHT(value, ptr)               __strt(value, ptr)
-
 
 /**
   \brief   STRT Unprivileged (32 bit)
@@ -797,7 +747,6 @@ __attribute__((always_inline)) __STATIC_INLINE uint32_t __USAT(int32_t val, uint
            (defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))     ) */
 
 /*@}*/ /* end of group CMSIS_Core_InstructionInterface */
-
 
 /* ###################  Compiler specific Intrinsics  ########################### */
 /** \defgroup CMSIS_SIMD_intrinsics CMSIS SIMD Intrinsics
@@ -880,6 +829,5 @@ __attribute__((always_inline)) __STATIC_INLINE uint32_t __USAT(int32_t val, uint
 
 #endif /* ((defined (__ARM_ARCH_7EM__) && (__ARM_ARCH_7EM__ == 1))     ) */
 /*@} end of group CMSIS_SIMD_intrinsics */
-
 
 #endif /* __CMSIS_ARMCC_H */

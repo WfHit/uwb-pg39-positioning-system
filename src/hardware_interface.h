@@ -1,10 +1,10 @@
 /**
  * @file    hardware_interface.h
  * @brief   Hardware abstraction layer for UWB positioning system
- * 
+ *
  * This file provides a unified interface to all hardware components including
  * UWB radio, UART communication, flash storage, OLED display, and timing.
- * 
+ *
  * @author  UWB PG3.9 project
  * @date    2024
  */

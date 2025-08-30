@@ -51,7 +51,6 @@
      Function-like macros are used to allow more efficient code.
  */
 
-
 /*******************************************************************************
  *                 CMSIS definitions
  ******************************************************************************/
@@ -114,7 +113,6 @@
 
 #include "cmsis_compiler.h"               /* CMSIS compiler specific defines */
 
-
 #ifdef __cplusplus
 }
 #endif
@@ -146,7 +144,7 @@
     #define __VTOR_PRESENT             0U
     #warning "__VTOR_PRESENT not defined in device header file; using default!"
   #endif
-  
+
   #ifndef __NVIC_PRIO_BITS
     #define __NVIC_PRIO_BITS          2U
     #warning "__NVIC_PRIO_BITS not defined in device header file; using default!"
@@ -180,8 +178,6 @@
 #define     __IOM    volatile            /*! Defines 'read / write' structure member permissions */
 
 /*@} end of group SC000 */
-
-
 
 /*******************************************************************************
  *                 Register Abstraction
@@ -233,7 +229,6 @@ typedef union
 #define APSR_V_Pos                         28U                                            /*!< APSR: V Position */
 #define APSR_V_Msk                         (1UL << APSR_V_Pos)                            /*!< APSR: V Mask */
 
-
 /**
   \brief  Union type to access the Interrupt Program Status Register (IPSR).
  */
@@ -250,7 +245,6 @@ typedef union
 /* IPSR Register Definitions */
 #define IPSR_ISR_Pos                        0U                                            /*!< IPSR: ISR Position */
 #define IPSR_ISR_Msk                       (0x1FFUL /*<< IPSR_ISR_Pos*/)                  /*!< IPSR: ISR Mask */
-
 
 /**
   \brief  Union type to access the Special-Purpose Program Status Registers (xPSR).
@@ -290,7 +284,6 @@ typedef union
 #define xPSR_ISR_Pos                        0U                                            /*!< xPSR: ISR Position */
 #define xPSR_ISR_Msk                       (0x1FFUL /*<< xPSR_ISR_Pos*/)                  /*!< xPSR: ISR Mask */
 
-
 /**
   \brief  Union type to access the Control Registers (CONTROL).
  */
@@ -310,7 +303,6 @@ typedef union
 #define CONTROL_SPSEL_Msk                  (1UL << CONTROL_SPSEL_Pos)                     /*!< CONTROL: SPSEL Mask */
 
 /*@} end of group CMSIS_CORE */
-
 
 /**
   \ingroup    CMSIS_core_register
@@ -337,7 +329,6 @@ typedef struct
 }  NVIC_Type;
 
 /*@} end of group CMSIS_NVIC */
-
 
 /**
   \ingroup  CMSIS_core_register
@@ -451,7 +442,6 @@ typedef struct
 
 /*@} end of group CMSIS_SCB */
 
-
 /**
   \ingroup  CMSIS_core_register
   \defgroup CMSIS_SCnSCB System Controls not in SCB (SCnSCB)
@@ -473,7 +463,6 @@ typedef struct
 #define SCnSCB_ACTLR_DISMCYCINT_Msk        (1UL /*<< SCnSCB_ACTLR_DISMCYCINT_Pos*/)    /*!< ACTLR: DISMCYCINT Mask */
 
 /*@} end of group CMSIS_SCnotSCB */
-
 
 /**
   \ingroup  CMSIS_core_register
@@ -614,7 +603,6 @@ typedef struct
 /*@} end of group CMSIS_MPU */
 #endif
 
-
 /**
   \ingroup  CMSIS_core_register
   \defgroup CMSIS_CoreDebug       Core Debug Registers (CoreDebug)
@@ -623,7 +611,6 @@ typedef struct
   @{
  */
 /*@} end of group CMSIS_CoreDebug */
-
 
 /**
   \ingroup    CMSIS_core_register
@@ -650,7 +637,6 @@ typedef struct
 
 /*@} end of group CMSIS_core_bitfield */
 
-
 /**
   \ingroup    CMSIS_core_register
   \defgroup   CMSIS_core_base     Core Definitions
@@ -676,8 +662,6 @@ typedef struct
 
 /*@} */
 
-
-
 /*******************************************************************************
  *                Hardware Abstraction Layer
   Core Function Interface contains:
@@ -688,8 +672,6 @@ typedef struct
 /**
   \defgroup CMSIS_Core_FunctionInterface Functions and Instructions Reference
 */
-
-
 
 /* ##########################   NVIC functions  #################################### */
 /**
@@ -731,19 +713,16 @@ typedef struct
 
 #define NVIC_USER_IRQ_OFFSET          16
 
-
 /* The following EXC_RETURN values are saved the LR on exception entry */
 #define EXC_RETURN_HANDLER         (0xFFFFFFF1UL)     /* return to Handler mode, uses MSP after return                               */
 #define EXC_RETURN_THREAD_MSP      (0xFFFFFFF9UL)     /* return to Thread mode, uses MSP after return                                */
 #define EXC_RETURN_THREAD_PSP      (0xFFFFFFFDUL)     /* return to Thread mode, uses PSP after return                                */
-
 
 /* Interrupt Priorities are WORD accessible only under Armv6-M                  */
 /* The following MACROS handle generation of the register offset and byte masks */
 #define _BIT_SHIFT(IRQn)         (  ((((uint32_t)(int32_t)(IRQn))         )      &  0x03UL) * 8UL)
 #define _SHP_IDX(IRQn)           ( (((((uint32_t)(int32_t)(IRQn)) & 0x0FUL)-8UL) >>    2UL)      )
 #define _IP_IDX(IRQn)            (   (((uint32_t)(int32_t)(IRQn))                >>    2UL)      )
-
 
 /**
   \brief   Enable Interrupt
@@ -760,7 +739,6 @@ __STATIC_INLINE void __NVIC_EnableIRQ(IRQn_Type IRQn)
     __COMPILER_BARRIER();
   }
 }
-
 
 /**
   \brief   Get Interrupt Enable status
@@ -782,7 +760,6 @@ __STATIC_INLINE uint32_t __NVIC_GetEnableIRQ(IRQn_Type IRQn)
   }
 }
 
-
 /**
   \brief   Disable Interrupt
   \details Disables a device specific interrupt in the NVIC interrupt controller.
@@ -798,7 +775,6 @@ __STATIC_INLINE void __NVIC_DisableIRQ(IRQn_Type IRQn)
     __ISB();
   }
 }
-
 
 /**
   \brief   Get Pending Interrupt
@@ -820,7 +796,6 @@ __STATIC_INLINE uint32_t __NVIC_GetPendingIRQ(IRQn_Type IRQn)
   }
 }
 
-
 /**
   \brief   Set Pending Interrupt
   \details Sets the pending bit of a device specific interrupt in the NVIC pending register.
@@ -835,7 +810,6 @@ __STATIC_INLINE void __NVIC_SetPendingIRQ(IRQn_Type IRQn)
   }
 }
 
-
 /**
   \brief   Clear Pending Interrupt
   \details Clears the pending bit of a device specific interrupt in the NVIC pending register.
@@ -849,7 +823,6 @@ __STATIC_INLINE void __NVIC_ClearPendingIRQ(IRQn_Type IRQn)
     NVIC->ICPR[0U] = (uint32_t)(1UL << (((uint32_t)IRQn) & 0x1FUL));
   }
 }
-
 
 /**
   \brief   Set Interrupt Priority
@@ -874,7 +847,6 @@ __STATIC_INLINE void __NVIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
   }
 }
 
-
 /**
   \brief   Get Interrupt Priority
   \details Reads the priority of a device specific interrupt or a processor exception.
@@ -897,7 +869,6 @@ __STATIC_INLINE uint32_t __NVIC_GetPriority(IRQn_Type IRQn)
   }
 }
 
-
 /**
   \brief   Set Interrupt Vector
   \details Sets an interrupt vector in SRAM based interrupt vector table.
@@ -914,7 +885,6 @@ __STATIC_INLINE void __NVIC_SetVector(IRQn_Type IRQn, uint32_t vector)
   /* ARM Application Note 321 states that the M0 and M0+ do not require the architectural barrier - assume SC000 is the same */
 }
 
-
 /**
   \brief   Get Interrupt Vector
   \details Reads an interrupt vector from interrupt vector table.
@@ -928,7 +898,6 @@ __STATIC_INLINE uint32_t __NVIC_GetVector(IRQn_Type IRQn)
   uint32_t *vectors = (uint32_t *)SCB->VTOR;
   return vectors[(int32_t)IRQn + NVIC_USER_IRQ_OFFSET];
 }
-
 
 /**
   \brief   System Reset
@@ -949,7 +918,6 @@ __NO_RETURN __STATIC_INLINE void __NVIC_SystemReset(void)
 }
 
 /*@} end of CMSIS_Core_NVICFunctions */
-
 
 /* ##########################  FPU functions  #################################### */
 /**
@@ -972,10 +940,7 @@ __STATIC_INLINE uint32_t SCB_GetFPUType(void)
     return 0U;           /* No FPU */
 }
 
-
 /*@} end of CMSIS_Core_FpuFunctions */
-
-
 
 /* ##################################    SysTick function  ############################################ */
 /**
@@ -1017,9 +982,6 @@ __STATIC_INLINE uint32_t SysTick_Config(uint32_t ticks)
 #endif
 
 /*@} end of CMSIS_Core_SysTickFunctions */
-
-
-
 
 #ifdef __cplusplus
 }

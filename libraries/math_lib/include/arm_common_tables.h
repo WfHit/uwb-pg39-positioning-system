@@ -215,7 +215,6 @@
     extern const uint64_t twiddleCoefF64_rfft_4096[4096];
   #endif /* !defined(ARM_DSP_CONFIG_TABLES) || defined(ARM_ALL_FFT_TABLES) */
 
-
   #if !defined(ARM_DSP_CONFIG_TABLES) || defined(ARM_ALL_FFT_TABLES) || defined(ARM_TABLE_TWIDDLECOEF_RFFT_F32_32)
     extern const float32_t twiddleCoef_rfft_32[32];
   #endif /* !defined(ARM_DSP_CONFIG_TABLES) || defined(ARM_ALL_FFT_TABLES) */
@@ -247,7 +246,6 @@
   #if !defined(ARM_DSP_CONFIG_TABLES) || defined(ARM_ALL_FFT_TABLES) || defined(ARM_TABLE_TWIDDLECOEF_RFFT_F32_4096)
     extern const float32_t twiddleCoef_rfft_4096[4096];
   #endif /* !defined(ARM_DSP_CONFIG_TABLES) || defined(ARM_ALL_FFT_TABLES) */
-
 
   /* Double precision floating-point bit reversal tables */
 
@@ -341,7 +339,6 @@
     #define ARMBITREVINDEXTABLE_4096_TABLE_LENGTH ((uint16_t)4032)
     extern const uint16_t armBitRevIndexTable4096[ARMBITREVINDEXTABLE_4096_TABLE_LENGTH];
   #endif /* !defined(ARM_DSP_CONFIG_TABLES) || defined(ARM_ALL_FFT_TABLES) */
-
 
   /* fixed-point bit reversal tables */
 

@@ -23,7 +23,6 @@ extern "C" {
 #define DWT_NUM_DW_DEV (1)
 #endif
 
-
 #define DWT_BIT_MASK(bit_num)   (((uint32_t)1)<<(bit_num))
 
 /* MACRO */
@@ -146,7 +145,7 @@ extern "C" {
 
 // Constants for PAC size
 #define DWT_PAC8        0   //!< PAC  8
-#define DWT_PAC16       1   //!< PAC 16  
+#define DWT_PAC16       1   //!< PAC 16
 #define DWT_PAC32       2   //!< PAC 32
 #define DWT_PAC4        3   //!< PAC  4
 
@@ -154,7 +153,7 @@ extern "C" {
 #define DWT_PHRMODE_STD         0x0     // standard PHR mode
 #define DWT_PHRMODE_EXT         0x1     // DW proprietary extended frames PHR mode
 
-// PHR rate constants  
+// PHR rate constants
 #define DWT_PHRRATE_STD         0x0     // standard PHR rate
 #define DWT_PHRRATE_DTA         0x1     // PHR at data rate (6M81)
 
@@ -177,7 +176,7 @@ typedef struct
     uint8_t phrRate;         //!< PHR rate {0x0 - standard DWT_PHRRATE_STD, 0x1 - at datarate DWT_PHRRATE_DTA}
     uint16_t sfdTO ;         //!< SFD timeout value (in symbols)
     uint8_t stsMode;         //!< STS mode (no STS, STS before PHR or STS after data)
-    uint8_t stsLength;       //!< STS length 
+    uint8_t stsLength;       //!< STS length
     uint8_t pdoaMode;        //!< PDOA mode
 } dwt_config_t ;
 

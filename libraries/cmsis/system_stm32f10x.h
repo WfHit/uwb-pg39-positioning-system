@@ -25,8 +25,8 @@
 
 /** @addtogroup stm32f10x_system
   * @{
-  */  
-  
+  */
+
 /**
   * @brief Define to prevent recursive inclusion
   */
@@ -35,7 +35,7 @@
 
 #ifdef __cplusplus
  extern "C" {
-#endif 
+#endif
 
 /** @addtogroup STM32F10x_System_Includes
   * @{
@@ -44,7 +44,6 @@
 /**
   * @}
   */
-
 
 /** @addtogroup STM32F10x_System_Exported_types
   * @{
@@ -75,7 +74,7 @@ extern uint32_t SystemCoreClock;          /*!< System Clock Frequency (Core Cloc
 /** @addtogroup STM32F10x_System_Exported_Functions
   * @{
   */
-  
+
 extern void SystemInit(void);
 extern void SystemCoreClockUpdate(void);
 /**
@@ -91,8 +90,8 @@ extern void SystemCoreClockUpdate(void);
 /**
   * @}
   */
-  
+
 /**
   * @}
-  */  
+  */
 /******************* (C) COPYRIGHT 2011 STMicroelectronics *****END OF FILE****/

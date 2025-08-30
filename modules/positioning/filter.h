@@ -1,11 +1,11 @@
 /**
- * @file    filter.h  
+ * @file    filter.h
  * @brief   Distance and position filtering algorithms header
- * 
+ *
  * This header defines structures and functions for filtering distance measurements
  * and position coordinates in the UWB positioning system. Provides outlier rejection
  * and Kalman filtering capabilities to improve measurement accuracy.
- * 
+ *
  * @author  UWB PG3.9 project
  * @date    2024
  */
@@ -23,27 +23,27 @@
 
 /**
  * @brief Filter state structure for each tracked tag
- * 
+ *
  * This structure maintains the filtering state for a single tag, including
  * distance measurement buffers and Kalman filter states for position coordinates.
  */
-typedef struct 
+typedef struct
 {
 	float Dist[3];          ///< Circular buffer for last 3 distance measurements
 	char Dist_index;        ///< Current index in distance circular buffer (0-2)
-	
+
 	// Kalman filter state for X coordinate
 	float p_last_x;         ///< Previous error covariance for X position
 	float last_x;           ///< Previous filtered X position estimate
-	
-	// Kalman filter state for Y coordinate  
+
+	// Kalman filter state for Y coordinate
 	float p_last_y;         ///< Previous error covariance for Y position
 	float last_y;           ///< Previous filtered Y position estimate
-	
+
 	// Kalman filter state for Z coordinate
-	float p_last_z;         ///< Previous error covariance for Z position 
+	float p_last_z;         ///< Previous error covariance for Z position
 	float last_z;           ///< Previous filtered Z position estimate
-	
+
 } __attribute((packed)) Tag_t;
 
 /*============================================================================
@@ -59,7 +59,7 @@ extern Tag_t tag_DistList[TAG_USE_MAX_NUM];
 
 /**
  * @brief Distance filter using average with outlier rejection
- * 
+ *
  * @param index Tag ID (0 to TAG_USE_MAX_NUM-1)
  * @param dist_now Current distance measurement in meters
  * @return Filtered distance value in meters
@@ -68,7 +68,7 @@ float Distance_Filter(int index, float dist_now);
 
 /**
  * @brief 1D Kalman filter for position coordinates
- * 
+ *
  * @param measurement Current coordinate measurement
  * @param process_noise_q Process noise variance (system uncertainty)
  * @param measurement_noise_r Measurement noise variance (sensor uncertainty)

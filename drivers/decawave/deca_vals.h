@@ -21,9 +21,9 @@ extern "C" {
 #define RX_BUFFER_0_ID          0x120000            /* Default Receive Data Buffer */
 #define RX_BUFFER_1_ID          0x130000            /* 2nd Receive Data Buffer */
 
-#define RF_TXCTRL_CH5           0x1C071134UL    
-#define RF_TXCTRL_CH9           0x1C010034UL    
-#define RF_RXCTRL_CH9           0x08B5A833UL    
+#define RF_TXCTRL_CH5           0x1C071134UL
+#define RF_TXCTRL_CH9           0x1C010034UL
+#define RF_RXCTRL_CH9           0x08B5A833UL
 #define RF_PLL_CFG_CH5          0x1F3C
 #define RF_PLL_CFG_CH9          0x0F3C
 #define RF_PLL_CFG_LD           0x81

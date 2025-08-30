@@ -1,15 +1,15 @@
 /**
  * @file    port.h
  * @brief   STM32F103 Hardware Abstraction Layer for UWB Positioning System
- * 
+ *
  * This file provides hardware-specific definitions and functions for the
  * STM32F103CB microcontroller interfacing with DecaWave UWB transceiver.
- * 
+ *
  * @attention
  * Copyright 2015-2020 (c) DecaWave Ltd, Dublin, Ireland.
  * Refactored for UWB PG3.9 project.
  * All rights reserved.
- * 
+ *
  * @author DecaWave/Refactored
  * @date 2024
  */

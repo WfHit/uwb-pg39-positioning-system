@@ -33,7 +33,6 @@
 #if   defined ( __CC_ARM )
   #include "cmsis_armcc.h"
 
-
 /*
  * Arm Compiler 6.6 LTM (armclang)
  */
@@ -46,20 +45,17 @@
 #elif defined (__ARMCC_VERSION) && (__ARMCC_VERSION >= 6100100)
   #include "cmsis_armclang.h"
 
-
 /*
  * GNU Compiler
  */
 #elif defined ( __GNUC__ )
   #include "cmsis_gcc.h"
 
-
 /*
  * IAR Compiler
  */
 #elif defined ( __ICCARM__ )
   #include <cmsis_iccarm.h>
-
 
 /*
  * TI Arm Compiler
@@ -127,7 +123,6 @@
     #warning No compiler specific solution for __COMPILER_BARRIER. __COMPILER_BARRIER is ignored.
     #define __COMPILER_BARRIER()                   (void)0
   #endif
-
 
 /*
  * TASKING Compiler
@@ -201,7 +196,6 @@
     #define __COMPILER_BARRIER()                   (void)0
   #endif
 
-
 /*
  * COSMIC Compiler
  */
@@ -273,11 +267,9 @@
     #define __COMPILER_BARRIER()                   (void)0
   #endif
 
-
 #else
   #error Unknown compiler.
 #endif
-
 
 #endif /* __CMSIS_COMPILER_H */
 

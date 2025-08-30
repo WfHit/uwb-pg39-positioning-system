@@ -1,13 +1,13 @@
 /**
  * @file    flash_config.h
  * @brief   STM32F103 Internal Flash Memory Management for UWB System
- * 
- * This file provides functions for reading and writing to the STM32F103 
+ *
+ * This file provides functions for reading and writing to the STM32F103
  * internal flash memory for configuration storage and data persistence.
- * 
+ *
  * @attention
  * Refactored for UWB PG3.9 positioning system.
- * 
+ *
  * @author  Refactored for UWB PG3.9 project
  * @date    2024
  */
@@ -80,26 +80,26 @@ typedef struct {
     uint8_t prf;                        /* Pulse repetition frequency */
     uint8_t data_rate;                  /* Data rate configuration */
     uint8_t ranging_algorithm;          /* DS-TWR or HDS-TWR */
-    
+
     /* Anchor-specific configuration */
     float anchor_position_x;            /* Anchor X coordinate (meters) */
     float anchor_position_y;            /* Anchor Y coordinate (meters) */
     float anchor_position_z;            /* Anchor Z coordinate (meters) */
-    
+
     /* Calibration data */
     uint16_t antenna_delay_rx;          /* RX antenna delay calibration */
     uint16_t antenna_delay_tx;          /* TX antenna delay calibration */
     int8_t tx_power;                    /* TX power setting */
-    
+
     /* Communication settings */
     uint32_t uart_baudrate;             /* UART communication speed */
     uint8_t uart_protocol_version;      /* Protocol version */
-    
+
     /* System settings */
     uint16_t measurement_interval_ms;   /* Measurement interval for tags */
     uint16_t discovery_interval_ms;     /* Discovery interval for tags */
     uint8_t max_anchors_per_measurement; /* Maximum anchors per measurement */
-    
+
     uint32_t checksum;                  /* Configuration checksum */
 } __attribute__((packed)) uwb_config_t;
 
@@ -108,21 +108,21 @@ typedef struct {
  */
 typedef struct {
     uint32_t magic_number;              /* Calibration validity marker */
-    
+
     /* Range calibration */
     float range_bias;                   /* Range measurement bias correction */
     float range_std;                    /* Range measurement standard deviation */
-    
+
     /* Power calibration */
     int8_t power_cal[8];                /* Power calibration per channel */
-    
+
     /* Temperature compensation */
     float temp_coeff;                   /* Temperature coefficient */
     float ref_temperature;              /* Reference temperature */
-    
+
     /* Crystal calibration */
     int16_t xtal_trim;                  /* Crystal trim value */
-    
+
     uint32_t checksum;                  /* Calibration checksum */
 } __attribute__((packed)) uwb_calibration_t;
 

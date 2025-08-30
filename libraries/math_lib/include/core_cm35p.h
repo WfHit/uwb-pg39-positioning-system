@@ -53,7 +53,6 @@
      Function-like macros are used to allow more efficient code.
  */
 
-
 /*******************************************************************************
  *                 CMSIS definitions
  ******************************************************************************/
@@ -207,7 +206,6 @@
 
 #include "cmsis_compiler.h"               /* CMSIS compiler specific defines */
 
-
 #ifdef __cplusplus
 }
 #endif
@@ -249,12 +247,12 @@
     #define __DSP_PRESENT             0U
     #warning "__DSP_PRESENT not defined in device header file; using default!"
   #endif
-  
+
   #ifndef __VTOR_PRESENT
     #define __VTOR_PRESENT             1U
     #warning "__VTOR_PRESENT not defined in device header file; using default!"
   #endif
-  
+
   #ifndef __NVIC_PRIO_BITS
     #define __NVIC_PRIO_BITS          3U
     #warning "__NVIC_PRIO_BITS not defined in device header file; using default!"
@@ -288,8 +286,6 @@
 #define     __IOM    volatile            /*! Defines 'read / write' structure member permissions */
 
 /*@} end of group Cortex_M35P */
-
-
 
 /*******************************************************************************
  *                 Register Abstraction
@@ -353,7 +349,6 @@ typedef union
 #define APSR_GE_Pos                        16U                                            /*!< APSR: GE Position */
 #define APSR_GE_Msk                        (0xFUL << APSR_GE_Pos)                         /*!< APSR: GE Mask */
 
-
 /**
   \brief  Union type to access the Interrupt Program Status Register (IPSR).
  */
@@ -370,7 +365,6 @@ typedef union
 /* IPSR Register Definitions */
 #define IPSR_ISR_Pos                        0U                                            /*!< IPSR: ISR Position */
 #define IPSR_ISR_Msk                       (0x1FFUL /*<< IPSR_ISR_Pos*/)                  /*!< IPSR: ISR Mask */
-
 
 /**
   \brief  Union type to access the Special-Purpose Program Status Registers (xPSR).
@@ -422,7 +416,6 @@ typedef union
 #define xPSR_ISR_Pos                        0U                                            /*!< xPSR: ISR Position */
 #define xPSR_ISR_Msk                       (0x1FFUL /*<< xPSR_ISR_Pos*/)                  /*!< xPSR: ISR Mask */
 
-
 /**
   \brief  Union type to access the Control Registers (CONTROL).
  */
@@ -453,7 +446,6 @@ typedef union
 #define CONTROL_nPRIV_Msk                  (1UL /*<< CONTROL_nPRIV_Pos*/)                 /*!< CONTROL: nPRIV Mask */
 
 /*@} end of group CMSIS_CORE */
-
 
 /**
   \ingroup    CMSIS_core_register
@@ -489,7 +481,6 @@ typedef struct
 #define NVIC_STIR_INTID_Msk                (0x1FFUL /*<< NVIC_STIR_INTID_Pos*/)        /*!< STIR: INTLINESNUM Mask */
 
 /*@} end of group CMSIS_NVIC */
-
 
 /**
   \ingroup  CMSIS_core_register
@@ -922,7 +913,6 @@ typedef struct
 
 /*@} end of group CMSIS_SCB */
 
-
 /**
   \ingroup  CMSIS_core_register
   \defgroup CMSIS_SCnSCB System Controls not in SCB (SCnSCB)
@@ -946,7 +936,6 @@ typedef struct
 #define SCnSCB_ICTR_INTLINESNUM_Msk        (0xFUL /*<< SCnSCB_ICTR_INTLINESNUM_Pos*/)  /*!< ICTR: INTLINESNUM Mask */
 
 /*@} end of group CMSIS_SCnotSCB */
-
 
 /**
   \ingroup  CMSIS_core_register
@@ -998,7 +987,6 @@ typedef struct
 #define SysTick_CALIB_TENMS_Msk            (0xFFFFFFUL /*<< SysTick_CALIB_TENMS_Pos*/)    /*!< SysTick CALIB: TENMS Mask */
 
 /*@} end of group CMSIS_SysTick */
-
 
 /**
   \ingroup  CMSIS_core_register
@@ -1098,7 +1086,6 @@ typedef struct
 #define ITM_LSR_Present_Msk                (1UL /*<< ITM_LSR_Present_Pos*/)               /*!< ITM LSR: Present Mask */
 
 /*@}*/ /* end of group CMSIS_ITM */
-
 
 /**
   \ingroup  CMSIS_core_register
@@ -1285,7 +1272,6 @@ typedef struct
 
 /*@}*/ /* end of group CMSIS_DWT */
 
-
 /**
   \ingroup  CMSIS_core_register
   \defgroup CMSIS_TPI     Trace Port Interface (TPI)
@@ -1458,7 +1444,6 @@ typedef struct
 
 /*@}*/ /* end of group CMSIS_TPI */
 
-
 #if defined (__MPU_PRESENT) && (__MPU_PRESENT == 1U)
 /**
   \ingroup  CMSIS_core_register
@@ -1571,7 +1556,6 @@ typedef struct
 /*@} end of group CMSIS_MPU */
 #endif
 
-
 #if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
 /**
   \ingroup  CMSIS_core_register
@@ -1657,7 +1641,6 @@ typedef struct
 
 /*@} end of group CMSIS_SAU */
 #endif /* defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U) */
-
 
 /**
   \ingroup  CMSIS_core_register
@@ -1927,7 +1910,6 @@ typedef struct
 
 /*@} end of group CMSIS_CoreDebug */
 
-
 /**
   \ingroup    CMSIS_core_register
   \defgroup CMSIS_DCB       Debug Control Block
@@ -2083,8 +2065,6 @@ typedef struct
 
 /*@} end of group CMSIS_DCB */
 
-
-
 /**
   \ingroup  CMSIS_core_register
   \defgroup CMSIS_DIB       Debug Identification Block
@@ -2154,9 +2134,7 @@ typedef struct
 #define DIB_DDEVTYPE_MAJOR_Pos              0U                                            /*!< DIB DDEVTYPE: Major type Position */
 #define DIB_DDEVTYPE_MAJOR_Msk             (0xFUL /*<< DIB_DDEVTYPE_MAJOR_Pos*/)          /*!< DIB DDEVTYPE: Major type Mask */
 
-
 /*@} end of group CMSIS_DIB */
-
 
 /**
   \ingroup    CMSIS_core_register
@@ -2182,7 +2160,6 @@ typedef struct
 #define _FLD2VAL(field, value)    (((uint32_t)(value) & field ## _Msk) >> field ## _Pos)
 
 /*@} end of group CMSIS_core_bitfield */
-
 
 /**
   \ingroup    CMSIS_core_register
@@ -2255,8 +2232,6 @@ typedef struct
 #endif /* defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U) */
 /*@} */
 
-
-
 /*******************************************************************************
  *                Hardware Abstraction Layer
   Core Function Interface contains:
@@ -2268,8 +2243,6 @@ typedef struct
 /**
   \defgroup CMSIS_Core_FunctionInterface Functions and Instructions Reference
 */
-
-
 
 /* ##########################   NVIC functions  #################################### */
 /**
@@ -2311,7 +2284,6 @@ typedef struct
 
 #define NVIC_USER_IRQ_OFFSET          16
 
-
 /* Special LR values for Secure/Non-Secure call handling and exception handling                                               */
 
 /* Function Return Payload (from ARMv8-M Architecture Reference Manual) LR value on entry from Secure BLXNS                   */
@@ -2332,7 +2304,6 @@ typedef struct
 #else
 #define EXC_INTEGRITY_SIGNATURE     (0xFEFA125BUL)     /* Value for processors without floating-point extension                */
 #endif
-
 
 /**
   \brief   Set Priority Grouping
@@ -2356,7 +2327,6 @@ __STATIC_INLINE void __NVIC_SetPriorityGrouping(uint32_t PriorityGroup)
   SCB->AIRCR =  reg_value;
 }
 
-
 /**
   \brief   Get Priority Grouping
   \details Reads the priority grouping field from the NVIC Interrupt Controller.
@@ -2366,7 +2336,6 @@ __STATIC_INLINE uint32_t __NVIC_GetPriorityGrouping(void)
 {
   return ((uint32_t)((SCB->AIRCR & SCB_AIRCR_PRIGROUP_Msk) >> SCB_AIRCR_PRIGROUP_Pos));
 }
-
 
 /**
   \brief   Enable Interrupt
@@ -2383,7 +2352,6 @@ __STATIC_INLINE void __NVIC_EnableIRQ(IRQn_Type IRQn)
     __COMPILER_BARRIER();
   }
 }
-
 
 /**
   \brief   Get Interrupt Enable status
@@ -2405,7 +2373,6 @@ __STATIC_INLINE uint32_t __NVIC_GetEnableIRQ(IRQn_Type IRQn)
   }
 }
 
-
 /**
   \brief   Disable Interrupt
   \details Disables a device specific interrupt in the NVIC interrupt controller.
@@ -2421,7 +2388,6 @@ __STATIC_INLINE void __NVIC_DisableIRQ(IRQn_Type IRQn)
     __ISB();
   }
 }
-
 
 /**
   \brief   Get Pending Interrupt
@@ -2443,7 +2409,6 @@ __STATIC_INLINE uint32_t __NVIC_GetPendingIRQ(IRQn_Type IRQn)
   }
 }
 
-
 /**
   \brief   Set Pending Interrupt
   \details Sets the pending bit of a device specific interrupt in the NVIC pending register.
@@ -2458,7 +2423,6 @@ __STATIC_INLINE void __NVIC_SetPendingIRQ(IRQn_Type IRQn)
   }
 }
 
-
 /**
   \brief   Clear Pending Interrupt
   \details Clears the pending bit of a device specific interrupt in the NVIC pending register.
@@ -2472,7 +2436,6 @@ __STATIC_INLINE void __NVIC_ClearPendingIRQ(IRQn_Type IRQn)
     NVIC->ICPR[(((uint32_t)IRQn) >> 5UL)] = (uint32_t)(1UL << (((uint32_t)IRQn) & 0x1FUL));
   }
 }
-
 
 /**
   \brief   Get Active Interrupt
@@ -2493,7 +2456,6 @@ __STATIC_INLINE uint32_t __NVIC_GetActive(IRQn_Type IRQn)
     return(0U);
   }
 }
-
 
 #if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
 /**
@@ -2516,7 +2478,6 @@ __STATIC_INLINE uint32_t NVIC_GetTargetState(IRQn_Type IRQn)
   }
 }
 
-
 /**
   \brief   Set Interrupt Target State
   \details Sets the interrupt target field in the NVIC and returns the interrupt target bit for the device specific interrupt.
@@ -2537,7 +2498,6 @@ __STATIC_INLINE uint32_t NVIC_SetTargetState(IRQn_Type IRQn)
     return(0U);
   }
 }
-
 
 /**
   \brief   Clear Interrupt Target State
@@ -2561,7 +2521,6 @@ __STATIC_INLINE uint32_t NVIC_ClearTargetState(IRQn_Type IRQn)
 }
 #endif /* defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U) */
 
-
 /**
   \brief   Set Interrupt Priority
   \details Sets the priority of a device specific interrupt or a processor exception.
@@ -2582,7 +2541,6 @@ __STATIC_INLINE void __NVIC_SetPriority(IRQn_Type IRQn, uint32_t priority)
     SCB->SHPR[(((uint32_t)IRQn) & 0xFUL)-4UL] = (uint8_t)((priority << (8U - __NVIC_PRIO_BITS)) & (uint32_t)0xFFUL);
   }
 }
-
 
 /**
   \brief   Get Interrupt Priority
@@ -2605,7 +2563,6 @@ __STATIC_INLINE uint32_t __NVIC_GetPriority(IRQn_Type IRQn)
     return(((uint32_t)SCB->SHPR[(((uint32_t)IRQn) & 0xFUL)-4UL] >> (8U - __NVIC_PRIO_BITS)));
   }
 }
-
 
 /**
   \brief   Encode Priority
@@ -2633,7 +2590,6 @@ __STATIC_INLINE uint32_t NVIC_EncodePriority (uint32_t PriorityGroup, uint32_t P
          );
 }
 
-
 /**
   \brief   Decode Priority
   \details Decodes an interrupt priority value with a given priority group to
@@ -2658,7 +2614,6 @@ __STATIC_INLINE void NVIC_DecodePriority (uint32_t Priority, uint32_t PriorityGr
   *pSubPriority     = (Priority                   ) & (uint32_t)((1UL << (SubPriorityBits    )) - 1UL);
 }
 
-
 /**
   \brief   Set Interrupt Vector
   \details Sets an interrupt vector in SRAM based interrupt vector table.
@@ -2675,7 +2630,6 @@ __STATIC_INLINE void __NVIC_SetVector(IRQn_Type IRQn, uint32_t vector)
   __DSB();
 }
 
-
 /**
   \brief   Get Interrupt Vector
   \details Reads an interrupt vector from interrupt vector table.
@@ -2689,7 +2643,6 @@ __STATIC_INLINE uint32_t __NVIC_GetVector(IRQn_Type IRQn)
   uint32_t *vectors = (uint32_t *)SCB->VTOR;
   return vectors[(int32_t)IRQn + NVIC_USER_IRQ_OFFSET];
 }
-
 
 /**
   \brief   System Reset
@@ -2733,7 +2686,6 @@ __STATIC_INLINE void TZ_NVIC_SetPriorityGrouping_NS(uint32_t PriorityGroup)
   SCB_NS->AIRCR =  reg_value;
 }
 
-
 /**
   \brief   Get Priority Grouping (non-secure)
   \details Reads the priority grouping field from the non-secure NVIC when in secure state.
@@ -2743,7 +2695,6 @@ __STATIC_INLINE uint32_t TZ_NVIC_GetPriorityGrouping_NS(void)
 {
   return ((uint32_t)((SCB_NS->AIRCR & SCB_AIRCR_PRIGROUP_Msk) >> SCB_AIRCR_PRIGROUP_Pos));
 }
-
 
 /**
   \brief   Enable Interrupt (non-secure)
@@ -2758,7 +2709,6 @@ __STATIC_INLINE void TZ_NVIC_EnableIRQ_NS(IRQn_Type IRQn)
     NVIC_NS->ISER[(((uint32_t)IRQn) >> 5UL)] = (uint32_t)(1UL << (((uint32_t)IRQn) & 0x1FUL));
   }
 }
-
 
 /**
   \brief   Get Interrupt Enable status (non-secure)
@@ -2780,7 +2730,6 @@ __STATIC_INLINE uint32_t TZ_NVIC_GetEnableIRQ_NS(IRQn_Type IRQn)
   }
 }
 
-
 /**
   \brief   Disable Interrupt (non-secure)
   \details Disables a device specific interrupt in the non-secure NVIC interrupt controller when in secure state.
@@ -2794,7 +2743,6 @@ __STATIC_INLINE void TZ_NVIC_DisableIRQ_NS(IRQn_Type IRQn)
     NVIC_NS->ICER[(((uint32_t)IRQn) >> 5UL)] = (uint32_t)(1UL << (((uint32_t)IRQn) & 0x1FUL));
   }
 }
-
 
 /**
   \brief   Get Pending Interrupt (non-secure)
@@ -2816,7 +2764,6 @@ __STATIC_INLINE uint32_t TZ_NVIC_GetPendingIRQ_NS(IRQn_Type IRQn)
   }
 }
 
-
 /**
   \brief   Set Pending Interrupt (non-secure)
   \details Sets the pending bit of a device specific interrupt in the non-secure NVIC pending register when in secure state.
@@ -2831,7 +2778,6 @@ __STATIC_INLINE void TZ_NVIC_SetPendingIRQ_NS(IRQn_Type IRQn)
   }
 }
 
-
 /**
   \brief   Clear Pending Interrupt (non-secure)
   \details Clears the pending bit of a device specific interrupt in the non-secure NVIC pending register when in secure state.
@@ -2845,7 +2791,6 @@ __STATIC_INLINE void TZ_NVIC_ClearPendingIRQ_NS(IRQn_Type IRQn)
     NVIC_NS->ICPR[(((uint32_t)IRQn) >> 5UL)] = (uint32_t)(1UL << (((uint32_t)IRQn) & 0x1FUL));
   }
 }
-
 
 /**
   \brief   Get Active Interrupt (non-secure)
@@ -2867,7 +2812,6 @@ __STATIC_INLINE uint32_t TZ_NVIC_GetActive_NS(IRQn_Type IRQn)
   }
 }
 
-
 /**
   \brief   Set Interrupt Priority (non-secure)
   \details Sets the priority of a non-secure device specific interrupt or a non-secure processor exception when in secure state.
@@ -2888,7 +2832,6 @@ __STATIC_INLINE void TZ_NVIC_SetPriority_NS(IRQn_Type IRQn, uint32_t priority)
     SCB_NS->SHPR[(((uint32_t)IRQn) & 0xFUL)-4UL] = (uint8_t)((priority << (8U - __NVIC_PRIO_BITS)) & (uint32_t)0xFFUL);
   }
 }
-
 
 /**
   \brief   Get Interrupt Priority (non-secure)
@@ -2957,10 +2900,7 @@ __STATIC_INLINE uint32_t SCB_GetFPUType(void)
   }
 }
 
-
 /*@} end of CMSIS_Core_FpuFunctions */
-
-
 
 /* ##########################   SAU functions  #################################### */
 /**
@@ -2981,8 +2921,6 @@ __STATIC_INLINE void TZ_SAU_Enable(void)
     SAU->CTRL |=  (SAU_CTRL_ENABLE_Msk);
 }
 
-
-
 /**
   \brief   Disable SAU
   \details Disables the Security Attribution Unit (SAU).
@@ -2996,9 +2934,6 @@ __STATIC_INLINE void TZ_SAU_Disable(void)
 
 /*@} end of CMSIS_Core_SAUFunctions */
 
-
-
-
 /* ##################################    Debug Control function  ############################################ */
 /**
   \ingroup  CMSIS_Core_FunctionInterface
@@ -3007,7 +2942,6 @@ __STATIC_INLINE void TZ_SAU_Disable(void)
   @{
  */
 
- 
 /**
   \brief   Set Debug Authentication Control Register
   \details writes to Debug Authentication Control register.
@@ -3022,7 +2956,6 @@ __STATIC_INLINE void DCB_SetAuthCtrl(uint32_t value)
     __ISB();
 }
 
-
 /**
   \brief   Get Debug Authentication Control Register
   \details Reads Debug Authentication Control register.
@@ -3032,7 +2965,6 @@ __STATIC_INLINE uint32_t DCB_GetAuthCtrl(void)
 {
     return (DCB->DAUTHCTRL);
 }
-
 
 #if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
 /**
@@ -3049,7 +2981,6 @@ __STATIC_INLINE void TZ_DCB_SetAuthCtrl_NS(uint32_t value)
     __ISB();
 }
 
-
 /**
   \brief   Get Debug Authentication Control Register (non-secure)
   \details Reads non-secure Debug Authentication Control register when in secure state.
@@ -3063,9 +2994,6 @@ __STATIC_INLINE uint32_t TZ_DCB_GetAuthCtrl_NS(void)
 
 /*@} end of CMSIS_Core_DCBFunctions */
 
-
-
-
 /* ##################################    Debug Identification function  ############################################ */
 /**
   \ingroup  CMSIS_Core_FunctionInterface
@@ -3074,7 +3002,6 @@ __STATIC_INLINE uint32_t TZ_DCB_GetAuthCtrl_NS(void)
   @{
  */
 
- 
 /**
   \brief   Get Debug Authentication Status Register
   \details Reads Debug Authentication Status register.
@@ -3084,7 +3011,6 @@ __STATIC_INLINE uint32_t DIB_GetAuthStatus(void)
 {
     return (DIB->DAUTHSTATUS);
 }
-
 
 #if defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U)
 /**
@@ -3099,9 +3025,6 @@ __STATIC_INLINE uint32_t TZ_DIB_GetAuthStatus_NS(void)
 #endif /* defined (__ARM_FEATURE_CMSE) && (__ARM_FEATURE_CMSE == 3U) */
 
 /*@} end of CMSIS_Core_DCBFunctions */
-
-
-
 
 /* ##################################    SysTick function  ############################################ */
 /**
@@ -3174,8 +3097,6 @@ __STATIC_INLINE uint32_t TZ_SysTick_Config_NS(uint32_t ticks)
 
 /*@} end of CMSIS_Core_SysTickFunctions */
 
-
-
 /* ##################################### Debug In/Output function ########################################### */
 /**
   \ingroup  CMSIS_Core_FunctionInterface
@@ -3186,7 +3107,6 @@ __STATIC_INLINE uint32_t TZ_SysTick_Config_NS(uint32_t ticks)
 
 extern volatile int32_t ITM_RxBuffer;                              /*!< External variable to receive characters. */
 #define                 ITM_RXBUFFER_EMPTY  ((int32_t)0x5AA55AA5U) /*!< Value identifying \ref ITM_RxBuffer is ready for next character. */
-
 
 /**
   \brief   ITM Send Character
@@ -3210,7 +3130,6 @@ __STATIC_INLINE uint32_t ITM_SendChar (uint32_t ch)
   return (ch);
 }
 
-
 /**
   \brief   ITM Receive Character
   \details Inputs a character via the external variable \ref ITM_RxBuffer.
@@ -3229,7 +3148,6 @@ __STATIC_INLINE int32_t ITM_ReceiveChar (void)
 
   return (ch);
 }
-
 
 /**
   \brief   ITM Check Character
@@ -3251,9 +3169,6 @@ __STATIC_INLINE int32_t ITM_CheckChar (void)
 }
 
 /*@} end of CMSIS_core_DebugFunctions */
-
-
-
 
 #ifdef __cplusplus
 }

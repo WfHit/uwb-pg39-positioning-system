@@ -21,7 +21,6 @@
 
 // -------------------------------------------------------------------------------------------------------------------
 // Module Macro definitions and enumerations
-//
 
 //#define DWT_API_ERROR_CHECK  /* API checks config input parameters */
 
@@ -79,7 +78,7 @@ static uint16_t get_sts_mnth(uint16_t sts, uint8_t default_threshold, uint8_t sh
 
 // -------------------------------------------------------------------------------------------------------------------
 // Macros and Enumerations for SPI & CLock blocks
-//
+
 #define DW3000_SPI_FAC      (0<<6 | 1<<0)
 #define DW3000_SPI_FARW     (0<<6 | 0<<0)
 #define DW3000_SPI_EAMRW    (1<<6)
@@ -99,14 +98,14 @@ static uint16_t get_sts_mnth(uint16_t sts, uint8_t default_threshold, uint8_t sh
 
 // -------------------------------------------------------------------------------------------------------------------
 // Internal functions prototypes for controlling and configuring the device
-//
+
 static void dwt_force_clocks(int clocks);
 static uint32_t _dwt_otpread(uint16_t address);                     // Read non-volatile memory
 static void _dwt_otpprogword32(uint32_t data, uint16_t address);  // Program the non-volatile memory
 
 // -------------------------------------------------------------------------------------------------------------------
 // Data for DW3000 Decawave Transceiver control
-//
+
 // Structure to hold the device data
 typedef struct
 {
@@ -135,10 +134,9 @@ typedef struct
     dwt_cb_t    cbSPIRdy;             // Callback for SPI ready events
 } dwt_local_data_t ;
 
-
 // -------------------------------------------------------------------------------------------------------------------
 // Local variables
-//
+
 static dwt_local_data_t   DW3000local[DWT_NUM_DW_DEV] ; // Local device data, can be an array to support multiple DW3000 testing applications/platforms
 static dwt_local_data_t *pdw3000local = &DW3000local[0];   // Local data structure pointer
 static uint8_t crcTable[256];
@@ -692,7 +690,7 @@ void _dwt_prog_ldo_and_bias_tune(void)
 }
 
 /*! ------------------------------------------------------------------------------------------------------------------
-* @brief This function is a static function used to 'kick' the desired operating parameter set (OPS) table upon wakeup from sleep. 
+* @brief This function is a static function used to 'kick' the desired operating parameter set (OPS) table upon wakeup from sleep.
 *        It will load the required OPS table configuration based upon what OPS table was set to be used in dwt_configure().
 *
 * input parameters
@@ -825,7 +823,6 @@ int dwt_initialise(int mode)
     if (mode & DWT_READ_OTP_TMP)
         pdw3000local->tempP = (uint8_t)_dwt_otpread(VTEMP_ADDRESS);
 
-
     if(pdw3000local->tempP == 0) //if the reference temperature has not been programmed in OTP (early eng samples) set to default value
     {
         pdw3000local->tempP = 0x85 ; //@temp of 20 deg
@@ -844,7 +841,6 @@ int dwt_initialise(int mode)
         pdw3000local->init_xtrim = 0x2E ; //set default value
     }
     dwt_write8bitoffsetreg(XTAL_ID, 0, pdw3000local->init_xtrim);
-
 
     return DWT_SUCCESS ;
 
@@ -965,7 +961,7 @@ void dwt_setlnapamode(int lna_pa)
             | GPIO_MODE_MSGP4_MODE_BIT_MASK | GPIO_MODE_MSGP5_MODE_BIT_MASK | GPIO_MODE_MSGP6_MODE_BIT_MASK)); //clear GPIO 4, 5, 6, configuration
     if (lna_pa & DWT_LNA_ENABLE)
     {
-        gpio_mode |= GPIO_PIN6_EXTRX;   
+        gpio_mode |= GPIO_PIN6_EXTRX;
     }
     if (lna_pa & DWT_PA_ENABLE)
     {
@@ -1288,7 +1284,7 @@ void dwt_configurestsmode(uint8_t stsMode)
 
     pdw3000local->stsconfig = stsMode;
 
-    /////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////
     //SYS_CFG
     //clear the PHR Mode, PHR Rate, STS Protocol, SDC, PDOA Mode,
     //then set the relevant bits according to configuration of the PHR Mode, PHR Rate, STS Protocol, SDC, PDOA Mode,
@@ -1329,7 +1325,6 @@ int dwt_configure(dwt_config_t *config)
     uint16_t sts_len;
     int error = DWT_SUCCESS;
 
-
 #ifdef DWT_API_ERROR_CHECK
     assert((config->dataRate == DWT_BR_6M8) || (config->dataRate == DWT_BR_850K));
     assert(config->rxPAC <= DWT_PAC4);
@@ -1340,8 +1335,8 @@ int dwt_configure(dwt_config_t *config)
     assert((config->phrMode == DWT_PHRMODE_STD) || (config->phrMode == DWT_PHRMODE_EXT));
     assert((config->phrRate == DWT_PHRRATE_STD) || (config->phrRate == DWT_PHRRATE_DTA));
     assert((config->pdoaMode == DWT_PDOA_M0) || (config->pdoaMode == DWT_PDOA_M1) || (config->pdoaMode == DWT_PDOA_M3));
-	assert(((config->stsMode & DWT_STS_CONFIG_MASK) == DWT_STS_MODE_OFF) 
-        || ((config->stsMode & DWT_STS_CONFIG_MASK) == DWT_STS_MODE_1) 
+	assert(((config->stsMode & DWT_STS_CONFIG_MASK) == DWT_STS_MODE_OFF)
+        || ((config->stsMode & DWT_STS_CONFIG_MASK) == DWT_STS_MODE_1)
         || ((config->stsMode & DWT_STS_CONFIG_MASK) == DWT_STS_MODE_2)
         || ((config->stsMode & DWT_STS_CONFIG_MASK) == DWT_STS_MODE_ND)
         || ((config->stsMode & DWT_STS_CONFIG_MASK) == DWT_STS_MODE_SDC)
@@ -1377,7 +1372,7 @@ int dwt_configure(dwt_config_t *config)
     pdw3000local->ststhreshold = (int16_t)((((uint32_t)sts_len) * 8) * STSQUAL_THRESH_64);
     pdw3000local->stsconfig = config->stsMode;
 
-    /////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////
     //SYS_CFG
     //clear the PHR Mode, PHR Rate, STS Protocol, SDC, PDOA Mode,
     //then set the relevant bits according to configuration of the PHR Mode, PHR Rate, STS Protocol, SDC, PDOA Mode,
@@ -1386,7 +1381,6 @@ int dwt_configure(dwt_config_t *config)
         | ((uint16_t)config->stsMode & DWT_STS_CONFIG_MASK) << SYS_CFG_CP_SPC_BIT_OFFSET
         | (SYS_CFG_PHR_6M8_BIT_MASK & ((uint32_t)config->phrRate << SYS_CFG_PHR_6M8_BIT_OFFSET))
         | mode);
-
 
     if (scp)
     {
@@ -1400,12 +1394,12 @@ int dwt_configure(dwt_config_t *config)
         dwt_write32bitoffsetreg(STS_CONFIG_LO_ID, 0, STS_CONFIG_LO_SCP);
         dwt_write8bitoffsetreg(STS_CONFIG_HI_ID, 0, STS_CONFIG_HI_SCP);
     }
-    else //
+    else
     {
         uint16_t sts_mnth;
         if (config->stsMode != DWT_STS_MODE_OFF)
         {
-           
+
             //configure CIA STS lower bound
             if ((config->pdoaMode == DWT_PDOA_M1) || (config->pdoaMode == DWT_PDOA_M0))
             {
@@ -1461,7 +1455,7 @@ int dwt_configure(dwt_config_t *config)
         dwt_write32bitoffsetreg(DTUNE3_ID, 0, PD_THRESH_DEFAULT);
     }
 
-    /////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////
     //CHAN_CTRL
     temp = dwt_read32bitoffsetreg(CHAN_CTRL_ID, 0);
     temp &= (~(CHAN_CTRL_RX_PCODE_BIT_MASK | CHAN_CTRL_TX_PCODE_BIT_MASK | CHAN_CTRL_SFD_TYPE_BIT_MASK | CHAN_CTRL_RF_CHAN_BIT_MASK));
@@ -1474,13 +1468,12 @@ int dwt_configure(dwt_config_t *config)
 
     dwt_write32bitoffsetreg(CHAN_CTRL_ID, 0, temp);
 
-    /////////////////////////////////////////////////////////////////////////
+    ///////////////////////////////////////////////////////////////////////
     //TX_FCTRL
     // Set up TX Preamble Size, PRF and Data Rate
     dwt_modify32bitoffsetreg(TX_FCTRL_ID, 0, ~(TX_FCTRL_TXBR_BIT_MASK | TX_FCTRL_TXPSR_BIT_MASK),
                                               ((uint32_t)config->dataRate << TX_FCTRL_TXBR_BIT_OFFSET)
                                               | ((uint32_t) config->txPreambLength) << TX_FCTRL_TXPSR_BIT_OFFSET);
-
 
     //DTUNE (SFD timeout)
     // Don't allow 0 - SFD timeout will always be enabled
@@ -1490,8 +1483,7 @@ int dwt_configure(dwt_config_t *config)
     }
     dwt_write16bitoffsetreg(DTUNE0_ID, 2, config->sfdTO);
 
-
-    ///////////////////////
+    /////////////////////
     // RF
     if (chan == 9)
     {
@@ -1515,7 +1507,7 @@ int dwt_configure(dwt_config_t *config)
     //Verify PLL lock bit is cleared
     dwt_write8bitoffsetreg(SYS_STATUS_ID, 0, SYS_STATUS_CP_LOCK_BIT_MASK);
 
-    ///////////////////////
+    /////////////////////
     // auto cal the PLL and change to IDLE_PLL state
     dwt_setdwstate(DWT_DW_IDLE);
 
@@ -1553,10 +1545,9 @@ int dwt_configure(dwt_config_t *config)
         dwt_and8bitoffsetreg(DGC_CFG_ID, 0x0, (uint8_t)~DGC_CFG_RX_TUNE_EN_BIT_MASK);
     }
 
-    ///////////////////////
+    /////////////////////
     // PGF
     error = dwt_pgf_cal(1);  //if the RX calibration routine fails the device receiver performance will be severely affected, the application should reset and try again
-
 
     return error;
 } // end dwt_configure()
@@ -1620,7 +1611,7 @@ int dwt_run_pgfcal(void)
     dwt_write32bitoffsetreg(RX_CAL_CFG_ID, 0x0, data);
     // Trigger PGF Cal
     dwt_or8bitoffsetreg(RX_CAL_CFG_ID, 0x0, RX_CAL_CFG_CAL_EN_BIT_MASK);
-    
+
     for (flag=1,cnt=0;cnt<MAX_RETRIES_FOR_PGF;cnt++)
     {
         deca_usleep(DELAY_20uUSec);
@@ -1651,7 +1642,7 @@ int dwt_run_pgfcal(void)
         //PGF Q Cal Fail
         result = DWT_ERROR;
     }
-    
+
     return result;
 }
 
@@ -1701,8 +1692,8 @@ void dwt_settxantennadelay(uint16_t txDelay)
  *                         The extended PHR mode allows to transmit frames of up to 1023 bytes (including 2 byte CRC)
  *                         if > 127 is programmed, DWT_PHRMODE_EXT needs to be set in the phrMode configuration
  *                         see dwt_configure function
- * @param txDataBytes    - Pointer to the user’s buffer containing the data to send.
- * @param txBufferOffset - This specifies an offset in the DW IC’s TX Buffer at which to start writing data.
+ * @param txDataBytes    - Pointer to the users buffer containing the data to send.
+ * @param txBufferOffset - This specifies an offset in the DW ICs TX Buffer at which to start writing data.
  *
  * output parameters
  *
@@ -1964,8 +1955,7 @@ int32_t dwt_readcarrierintegrator(void)
     uint8_t   buffer[DRX_CARRIER_INT_LEN] ;
 
     /* Read 3 bytes into buffer (21-bit quantity) */
-    dwt_readfromdevice(DRX_DIAG3_ID, 0, DRX_CARRIER_INT_LEN, buffer);//
-
+    dwt_readfromdevice(DRX_DIAG3_ID, 0, DRX_CARRIER_INT_LEN, buffer);
     for (j = 2 ; j >= 0 ; j --)  // arrange the three bytes into an unsigned integer value
     {
         regval = (regval << 8) + buffer[j] ;
@@ -2154,7 +2144,7 @@ void dwt_readdiagnostics(dwt_rxdiag_t *diagnostics)
         diagnostics->ipatovF3 = ((uint32_t)temp[BUF0_IP_DIAG_4 - BUF0_RX_FINFO + 3] << 24 | (uint32_t)temp[BUF0_IP_DIAG_4 - BUF0_RX_FINFO + 2] << 16
             | (uint32_t)temp[BUF0_IP_DIAG_4 - BUF0_RX_FINFO + 1] << 8 | (uint32_t)temp[BUF0_IP_DIAG_4 - BUF0_RX_FINFO]) & 0x3FFFFF;    // F3 for Ipatov sequence [21:0]
         diagnostics->ipatovFpIndex = (uint16_t)temp[BUF0_IP_DIAG_8 - BUF0_RX_FINFO + 1] << 8 | temp[BUF0_IP_DIAG_8 - BUF0_RX_FINFO];              // First path index [15:0] for Ipatov sequence
-        
+
                                                                                                                                                   //CP 1
         diagnostics->stsPeak = ((uint32_t)temp[BUF0_STS_DIAG_0 - BUF0_RX_FINFO + 3] << 24 | (uint32_t)temp[BUF0_STS_DIAG_0 - BUF0_RX_FINFO + 2] << 16
             | (uint32_t)temp[BUF0_STS_DIAG_0 - BUF0_RX_FINFO + 1] << 8 | (uint32_t)temp[BUF0_STS_DIAG_0 - BUF0_RX_FINFO]) & 0x3FFFFFFF; // index [29:21] and amplitude [20:0] of peak sample in STS CIR
@@ -2180,8 +2170,6 @@ void dwt_readdiagnostics(dwt_rxdiag_t *diagnostics)
             | (uint32_t)temp[BUF0_STS1_DIAG_4 - BUF0_RX_FINFO + 1] << 8 | (uint32_t)temp[BUF0_STS1_DIAG_4 - BUF0_RX_FINFO]) & 0x3FFFFF; // F3 for STS [21:0]
         diagnostics->sts2FpIndex = ((uint16_t)temp[BUF0_STS1_DIAG_8 - BUF0_RX_FINFO + 1] << 8 | temp[BUF0_STS1_DIAG_8 - BUF0_RX_FINFO]) & 0x7FFF;   // First path index [14:0] for STS
         diagnostics->sts2AccumCount = ((uint16_t)temp[BUF0_STS1_DIAG_12 - BUF0_RX_FINFO + 1] << 8 | temp[BUF0_STS1_DIAG_12 - BUF0_RX_FINFO]) & 0xFFF;   // Number accumulated symbols [11:0] for STS
-
-
 
         break;
 
@@ -2249,7 +2237,6 @@ void dwt_readdiagnostics(dwt_rxdiag_t *diagnostics)
         diagnostics->stsF2 = ((uint32_t)temp[STS_DIAG_3_ID - IP_TOA_LO_ID + 3] << 24 | (uint32_t)temp[STS_DIAG_3_ID - IP_TOA_LO_ID + 2] << 16
             | (uint32_t)temp[STS_DIAG_3_ID - IP_TOA_LO_ID + 1] << 8 | (uint32_t)temp[STS_DIAG_3_ID - IP_TOA_LO_ID]) & 0x3FFFFF; // F2 for STS [21:0]
 
-
         offset_0xd = 0x6c; // there are 0x6C bytes in 0xC0000 base before we enter 0xD0000
 
         diagnostics->stsF3 = ((uint32_t)temp[STS_DIAG_4_ID - STS_DIAG_4_ID + offset_0xd + 3] << 24 | (uint32_t)temp[STS_DIAG_4_ID - STS_DIAG_4_ID + offset_0xd + 2] << 16
@@ -2271,9 +2258,9 @@ void dwt_readdiagnostics(dwt_rxdiag_t *diagnostics)
         diagnostics->sts2AccumCount = ((uint16_t)temp[STS1_DIAG_12_ID - STS_DIAG_4_ID + offset_0xd + 1] << 8 | temp[STS1_DIAG_12_ID - STS_DIAG_4_ID + offset_0xd]) & 0xFFF;   // Number accumulated symbols [11:0] for STS
         break;
     }
-	
+
 	diagnostics->dgcdecision = (dwt_read8bitoffsetreg(0x30060, 3) & 0x07F)>> 4;
-	
+
 }
 
 /*! ------------------------------------------------------------------------------------------------------------------
@@ -2699,7 +2686,7 @@ void dwt_otpread(uint16_t address, uint32_t *array, uint8_t length)
 }
 
 /*! ------------------------------------------------------------------------------------------------------------------
- * @brief function to read the OTP memory. 
+ * @brief function to read the OTP memory.
  *
  * input parameters
  * @param address - address to read at
@@ -2730,7 +2717,7 @@ uint32_t _dwt_otpread(uint16_t address)
  *
  * @param val: 16-bit value to write to the OTP block
  */
-void  __dwt_otp_write_wdata_id_reg(int16_t val) 
+void  __dwt_otp_write_wdata_id_reg(int16_t val)
 {
     /* Pull the CS high to enable user interface for programming */
 	/* 'val' is ignored in this instance by the OTP block */
@@ -2740,7 +2727,7 @@ void  __dwt_otp_write_wdata_id_reg(int16_t val)
 }
 
 /*! ------------------------------------------------------------------------------------------------------------------
- * @brief function to program the OTP memory. 
+ * @brief function to program the OTP memory.
  * Note the address is only 11 bits long.
  *
  * input parameters
@@ -2761,7 +2748,7 @@ void _dwt_otpprogword32(uint32_t data, uint16_t address)
     uint32_t ldo_tune = dwt_read32bitoffsetreg(LDO_TUNE_HI_ID, 0);
     // Set VDDHV_TX LDO to max
     dwt_or32bitoffsetreg(LDO_TUNE_HI_ID, 0, LDO_TUNE_HI_LDO_HVAUX_TUNE_BIT_MASK);
-    
+
     // configure mode for programming
     dwt_write16bitoffsetreg(OTP_CFG_ID, 0, 0x018);
 
@@ -2781,7 +2768,6 @@ void _dwt_otpprogword32(uint32_t data, uint16_t address)
 
     // Clean up
     __dwt_otp_write_wdata_id_reg(0x0000);
-
 
     // Apply instruction  to write data
     __dwt_otp_write_wdata_id_reg(0x0002);
@@ -2807,7 +2793,7 @@ void _dwt_otpprogword32(uint32_t data, uint16_t address)
     // Clean up
     __dwt_otp_write_wdata_id_reg(0x0000);
 
-    /* 
+    /*
 	// Enable state/status output
     __dwt_otp_write_wdata_id_reg(0x003a);
     __dwt_otp_write_wdata_id_reg(0x01bf);
@@ -2840,7 +2826,6 @@ void _dwt_otpprogword32(uint32_t data, uint16_t address)
         }
     }*/
 
-
     deca_sleep(2);//Uncomment this command if you don't want to use the loop above. It will take more time than the loop above.
 
     // Stop prog mode
@@ -2851,7 +2836,7 @@ void _dwt_otpprogword32(uint32_t data, uint16_t address)
 
     // configure mode for reading
     dwt_write16bitoffsetreg(OTP_CFG_ID, 0, 0x0000);
-    
+
     // Restore LDO tune register
     dwt_write32bitoffsetreg(LDO_TUNE_HI_ID, 0, ldo_tune);
 }
@@ -3311,7 +3296,6 @@ uint8_t dwt_checkidlerc(void)
  * no return value
  */
 
-
 void dwt_isr(void)
 {
 
@@ -3375,8 +3359,6 @@ void dwt_isr(void)
 
     }
 
-
-
     // SPI ready and IDLE_RC bit gets set when device powers on, or on wake up
     if(fstat & FINT_STAT_SYS_EVENT_BIT_MASK)
     {
@@ -3397,7 +3379,7 @@ void dwt_isr(void)
     if(fstat & FINT_STAT_RXOK_BIT_MASK)
     {
         uint32_t cia_err = 0;
-        
+
         pdw3000local->cbData.rx_flags = 0;
 
         if(pdw3000local->dblbuffon) // if in double buffer mode
@@ -3486,7 +3468,7 @@ void dwt_isr(void)
             }
 
         }
-        
+
         dwt_write32bitreg(SYS_STATUS_ID, cia_err | SYS_STATUS_ALL_RX_GOOD); // Clear all status bits relating to good reception
 
         // Call the corresponding callback if present
@@ -3502,7 +3484,7 @@ void dwt_isr(void)
         }
 
     }
-	
+
     // RXFCE&~DISFCE|RXPHE|RXFSL|ARFE|RXSTO|RXOVRR. Real errored frame received, so ignore FCE if disabled
     // Handle RX errors events
     if(fstat & FINT_STAT_RXERR_BIT_MASK)
@@ -3531,7 +3513,6 @@ void dwt_isr(void)
         }
 
     }
-
 
 }
 
@@ -3612,7 +3593,7 @@ void dwt_force_clocks(int clocks)
         dwt_write16bitoffsetreg(CLK_CTRL_ID, 0x0, regvalue0);
 
     }
-    
+
     if (clocks == FORCE_CLK_AUTO)
     {
         //Restore auto clock mode
@@ -3811,7 +3792,7 @@ void dwt_forcetrxoff(void)
  * @param enable - 1 to enable SNIFF mode, 0 to disable. When 0, all other parameters are not taken into account.
  * @param timeOn - duration of receiver ON phase, expressed in multiples of PAC size. The counter automatically adds 1 PAC
  *                 size to the value set. Min value that can be set is 1 (i.e. an ON time of 2 PAC size), max value is 15.
- * @param timeOff - duration of receiver OFF phase, expressed in multiples of 128/125 µs (~1 µs). Max value is 255.
+ * @param timeOff - duration of receiver OFF phase, expressed in multiples of 128/125 s (~1 s). Max value is 255.
  *
  * output parameters
  *
@@ -4046,7 +4027,6 @@ void dwt_readeventcounters(dwt_deviceentcnts_t *counters)
     temp = dwt_read32bitoffsetreg(EVC_COUNT6_ID, 0); //Preamble rejections (11-0) events
     counters->PREJ = temp & 0xFFF;
 
-
 }
 
 /*! ------------------------------------------------------------------------------------------------------------------
@@ -4147,7 +4127,7 @@ void dwt_disable_rf_tx(uint8_t switch_config)
  *
  * input parameters
  * @param[in] channel - specifies the operating channel (e.g. 5 or 9)
- * @param[in] switch_config - specifies whether the switch needs to be configured for TX 
+ * @param[in] switch_config - specifies whether the switch needs to be configured for TX
  *
  * output parameters
  *
@@ -4179,7 +4159,7 @@ void dwt_enable_rf_tx(uint32_t channel, uint8_t switch_control)
 
     if (switch_control)
     {
-        //configure the TXRX switch for TX mode 
+        //configure the TXRX switch for TX mode
         dwt_write32bitoffsetreg(RF_SWITCH_CTRL_ID, 0x0, TXRXSWITCH_TX);
     }
 
@@ -4203,7 +4183,6 @@ void dwt_repeated_cw(int cw_enable, int cw_mode_config)
 
     if (cw_mode_config > 0xF)  cw_mode_config = 0xF;
     if ((cw_enable > 3) || (cw_enable < 1)) cw_enable = 4;
-
 
     dwt_write32bitoffsetreg(TX_TEST_ID, 0x0, 0x10 >> cw_enable);
     dwt_write32bitoffsetreg(PG_TEST_ID, 0x0, cw_mode_config << ((cw_enable - 1) * 4));
@@ -4388,7 +4367,7 @@ float dwt_convertrawtemperature(uint8_t raw_temp)
 {
     float realtemp;
 
-    // the User Manual formula is: Temperature (°C) = ( (SAR_LTEMP – OTP_READ(Vtemp @ 20°C) ) x 1.05)        // Vtemp @ 20°C
+    // the User Manual formula is: Temperature (C) = ( (SAR_LTEMP  OTP_READ(Vtemp @ 20C) ) x 1.05)        // Vtemp @ 20C
     realtemp = (float)((raw_temp - pdw3000local->tempP) * 1.05f) + 20.0f;
     return realtemp;
 }
@@ -4506,7 +4485,7 @@ uint16_t dwt_calcpgcount(uint8_t pgdly, int channel)
     dwt_force_clocks(FORCE_CLK_SYS_TX);
     dwt_enable_rf_tx(channel, 0);
     dwt_enable_rftx_blocks(channel);
-    
+
     dwt_write8bitoffsetreg(TX_CTRL_HI_ID, TX_CTRL_HI_TX_PG_DELAY_BIT_OFFSET, pgdly & TX_CTRL_HI_TX_PG_DELAY_BIT_MASK);
 
     // Run count cal
@@ -4868,7 +4847,7 @@ int8_t dwt_do_aes(dwt_aes_job_t *job, dwt_aes_core_type_e core_type)
 * no return value
 *
 */
-void dwt_configure_le_address(uint16_t addr, int leIndex) 
+void dwt_configure_le_address(uint16_t addr, int leIndex)
 {
     switch (leIndex)
     {
